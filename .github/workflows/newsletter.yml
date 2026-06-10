@@ -2,8 +2,10 @@ name: Daily Tech Newsletter
 
 on:
   schedule:
+    # 매일 평일(월~금) 한국 시간 아침 9시 자동 실행
+    # GitHub Actions cron은 UTC 기준이므로 한국 시간(UTC+9) 오전 9시는 UTC 00:00입니다.
     - cron: '0 0 * * 1-5'
-  workflow_dispatch:
+  workflow_dispatch: # 수동으로 즉시 실행할 수 있는 버튼 활성화
 
 jobs:
   build:
@@ -15,20 +17,25 @@ jobs:
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
-        python-version: '3.11' # 💡 지원 종료 경고를 없애기 위해 3.11로 업그레이드
+        python-version: '3.11' # 구글 패키지 지원 종료 경고 방지를 위한 업그레이드
 
     - name: Install Dependencies
       run: |
-        # 💡 구형 google-generativeai 대신 최신 공식 google-genai 라이브러리를 설치합니다.
+        # 최신 공식 google-genai 라이브러리와 requests 설치
         pip install google-genai requests
 
     - name: Run Script
       env:
+        # GitHub Settings -> Secrets에 등록한 금고 값들을 파이션 코드로 연결합니다.
         GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
         RECEIVER_EMAILS: ${{ secrets.RECEIVER_EMAILS }}
         SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+        
+        # progress.json을 자동 커밋/푸시하기 위해 내 PAT를 바인딩합니다.
         GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         GITHUB_REPOSITORY: ${{ github.repository }}
+        
+        # Node.js 20 사용 중단 경고를 우회하기 위한 환경 변수
         FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       run: python send_newsletter.py
