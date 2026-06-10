@@ -47,7 +47,7 @@ def save_json_file(filename, data):
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 def fetch_github_raw_content(repo_path):
-    raw_url = f"https://raw.githubusercontent.com/gyoogle/tech-interview-for-developer/master/{repo_path}"
+    raw_url = f"https://raw.githubusercontent.com/gyoogle/tech-interview-for-developer/main/{repo_path}"
     response = requests.get(raw_url)
     if response.status_code == 200:
         return response.text
@@ -187,10 +187,10 @@ def commit_and_push_progress():
         
         # 💡 [핵심 추가] Push 전, 원격 저장소의 최신 커밋(내가 웹에서 수정한 코드 등)을 당겨와서 충돌을 방어합니다.
         print("▶ 원격 저장소 최신 상태 동기화(Pull) 중...")
-        subprocess.run(['git', 'pull', '--rebase', remote_url, 'master'], capture_output=True)
+        subprocess.run(['git', 'pull', '--rebase', remote_url, 'main'], capture_output=True)
         
         result = subprocess.run(
-            ['git', 'push', remote_url, 'HEAD:master'],
+            ['git', 'push', remote_url, 'HEAD:main'],
             capture_output=True,
             text=True
         )
