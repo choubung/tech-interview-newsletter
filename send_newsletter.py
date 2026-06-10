@@ -108,3 +108,4 @@ def commit_and_push_progress():
 # ==========================================
 def main():
     curriculum = load_json_file(CURRICUL
+    progress = load_json_file(PROGRESS_FILE, {"current_index": 0})
