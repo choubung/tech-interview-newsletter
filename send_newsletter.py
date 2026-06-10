@@ -72,7 +72,7 @@ def generate_newsletter_with_gemini(title, content):
 {content}
 """
     # 뉴스레터의 풍부한 분량과 추론 성능을 위해 1.5 Pro 모델 사용 권장
-    model = genai.GenerativeModel('models/gemini-1.5-pro')
+    model = genai.GenerativeModel('models/gemini-1.5-flash')
     response = model.generate_content(prompt)
     return response.text
 
