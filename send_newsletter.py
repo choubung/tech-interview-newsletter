@@ -9,18 +9,23 @@ import google.generativeai as genai
 # ==========================================
 # 1. 환경 변수 및 설정 로드
 # ==========================================
-# GitHub Secrets 및 환경 변수에서 비밀키 로드
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY")
 GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD")
-# 내 레포에 진도를 업데이트할 때 쓸 토큰 (GitHub Actions 기본 토큰 또는 내 PAT 사용)
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN") 
-GITHUB_REPOSITORY = os.environ.get("GITHUB_REPOSITORY") # 예: "유저명/레포명"
+GITHUB_REPOSITORY = os.environ.get("GITHUB_REPOSITORY")
 
-# 이메일 수신자 설정 (본인 Gmail 주소 입력)
-RECEIVER_EMAIL = "doubuhanmo16@gmail.com" 
+# 💡 [리팩토링] 여러 수신자 이메일을 환경 변수에서 안전하게 파싱합니다.
+# Secrets에 RECEIVER_EMAILS 이름으로 "메일1, 메일2" 형태로 등록하시면 됩니다.
+RECEIVER_EMAILS_STR = os.environ.get("RECEIVER_EMAILS", "")
+RECEIVER_EMAILS = [email.strip() for email in RECEIVER_EMAILS_STR.split(",") if email.strip()]
+
+# 수신자 목록이 비어있을 때를 대비한 Fallback (기본 하드코딩값 유지)
+if not RECEIVER_EMAILS:
+    RECEIVER_EMAILS = ["doubuhanmo16@gmail.com"]
+
 SENDER_EMAIL = "doubuhanmo16@gmail.com"
 
-# Gemini API 설정
+# Gemini API 초기화
 genai.configure(api_key=GEMINI_API_KEY)
 
 PROGRESS_FILE = "progress.json"
@@ -31,20 +36,16 @@ CURRICULUM_FILE = "curriculum.json"
 # ==========================================
 
 def load_json_file(filename, default_value):
-    """파일이 존재하면 읽고, 없으면 기본값을 반환합니다."""
     if os.path.exists(filename):
         with open(filename, "r", encoding="utf-8") as f:
             return json.load(f)
     return default_value
 
 def save_json_file(filename, data):
-    """데이터를 JSON 파일로 로컬에 저장합니다."""
     with open(filename, "w", encoding="utf-8") as f:
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 def fetch_github_raw_content(repo_path):
-    """Gyoogle 레포지토리에서 마크다운 원본 텍스트를 가져옵니다."""
-    # Public 레포이므로 토큰 없이 Raw URL로 직접 접근 가능합니다.
     raw_url = f"https://raw.githubusercontent.com/gyoogle/tech-interview-for-developer/master/{repo_path}"
     response = requests.get(raw_url)
     if response.status_code == 200:
@@ -54,7 +55,6 @@ def fetch_github_raw_content(repo_path):
 
 def generate_newsletter_with_gemini(title, content):
     """Gemini API를 사용하여 취준생 맞춤형 기술 뉴스레터를 생성합니다."""
-    # 소요 시간인 15분에 알맞게 풍부한 해설과 면접 최적화 프롬프트 작성
     prompt = f"""
 너는 백엔드 개발자 채용을 담당하는 기술 면접관이자, 친절한 멘토야.
 취업 준비생이 등굣길이나 출근길에 15분 동안 몰입해서 읽기 좋은 풍부하고 깊이 있는 기술 뉴스레터를 작성해줘.
@@ -71,34 +71,28 @@ def generate_newsletter_with_gemini(title, content):
 [원본 마크다운 내용]:
 {content}
 """
-    model = genai.GenerativeModel('gemini-pro')
+    # 💡 [핵심 수정] 2026년 기준 가장 안정적이고 확실한 범용 프리 티어 모델코드로 변경합니다.
+    # 대량 문맥 요약과 텍스트 생성에 최적화된 최신 가속화 엔진 명칭입니다.
+    model = genai.GenerativeModel('gemini-1.5-flash-latest')
     response = model.generate_content(prompt)
     return response.text
 
-def send_email(subject, body):
-    """Gmail SMTP를 사용하여 나에게 메일을 발송합니다."""
+def send_email_to_user(receiver, subject, body):
+    """단일 수신자에게 메일을 발송합니다."""
     msg = MIMEMultipart()
     msg['From'] = SENDER_EMAIL
-    msg['To'] = RECEIVER_EMAIL
+    msg['To'] = receiver
     msg['Subject'] = subject
-
-    # 마크다운 텍스트를 메일 본문에 붙여넣음 (HTML로 변환하여 보내면 더 예쁘지만 우선 기본 텍스트로 안정적 발송)
     msg.attach(MIMEText(body, 'plain', 'utf-8'))
 
-    try:
-        # Gmail SMTP 서버 연결 (587 포트, TLS 보안)
-        server = smtplib.SMTP('smtp.gmail.com', 587)
-        server.starttls()
-        server.login(SENDER_EMAIL, GMAIL_APP_PASSWORD)
-        server.sendmail(SENDER_EMAIL, RECEIVER_EMAIL, msg.as_string())
-        server.quit()
-        print("▶ [성공] 뉴스레터 이메일 발송 완료!")
-    except Exception as e:
-        raise Exception(f"이메일 발송 중 오류가 발생했습니다: {str(e)}")
+    # Gmail SMTP 서버 연결
+    server = smtplib.SMTP('smtp.gmail.com', 587)
+    server.starttls()
+    server.login(SENDER_EMAIL, GMAIL_APP_PASSWORD)
+    server.sendmail(SENDER_EMAIL, receiver, msg.as_string())
+    server.quit()
 
 def commit_and_push_progress():
-    """GitHub Actions 환경에서 변경된 progress.json을 내 레포에 커밋 및 푸시합니다."""
-    # 로컬 테스트 환경이 아니라 GitHub Actions 자동화 환경일 때만 실행
     if GITHUB_TOKEN and GITHUB_REPOSITORY:
         print("▶ GitHub 저장소에 진도 파일 업데이트 중...")
         os.system('git config --global user.name "github-actions[bot]"')
@@ -106,7 +100,6 @@ def commit_and_push_progress():
         os.system('git add progress.json')
         os.system('git commit -m "CHORE: Update daily newsletter progress"')
         
-        # 권한이 부여된 토큰을 이용해 원격 저장소에 푸시
         remote_url = f"https://x-access-token:{GITHUB_TOKEN}@github.com/{GITHUB_REPOSITORY}.git"
         os.system(f'git push {remote_url} HEAD:master')
         print("▶ [성공] 진도 상태 Git Push 완료!")
@@ -115,18 +108,14 @@ def commit_and_push_progress():
 # 3. 메인 가동 프로세스
 # ==========================================
 def main():
-    # 커리큘럼과 현재 진도 상태 가져오기
     curriculum = load_json_file(CURRICULUM_FILE, [])
     progress = load_json_file(PROGRESS_FILE, {"current_index": 0})
-    
     current_idx = progress["current_index"]
     
-    # 모든 커리큘럼을 다 읽었을 경우 종료
     if current_idx >= len(curriculum):
         print("🎉 축하합니다! 모든 커리큘럼 뉴스레터 발송이 완료되었습니다.")
         return
 
-    # 오늘의 타겟 주제 선정
     target_item = curriculum[current_idx]
     topic_title = target_item["title"]
     repo_path = target_item["path"]
@@ -141,9 +130,16 @@ def main():
         print("🤖 Gemini가 뉴스레터를 작성하고 있습니다...")
         newsletter_body = generate_newsletter_with_gemini(topic_title, raw_content)
         
-        # 3. 이메일 발송
+        # 3. 이메일 순차 발송 (하나가 실패해도 대포알이 멈추지 않도록 안전 루프 처리)
         email_subject = f"[Dev-Digest] 오늘 자 백엔드 기술 배달: {topic_title}"
-        send_email(email_subject, newsletter_body)
+        print(f"📬 총 {len(RECEIVER_EMAILS)}명의 구독자에게 발송을 시작합니다...")
+        
+        for email in RECEIVER_EMAILS:
+            try:
+                send_email_to_user(email, email_subject, newsletter_body)
+                print(f"   ✅ 발송 성공: {email}")
+            except Exception as mail_err:
+                print(f"   ❌ 발송 실패: {email} (사유: {mail_err})")
         
         # 4. 진도 한 칸 전진 및 저장
         progress["current_index"] = current_idx + 1
