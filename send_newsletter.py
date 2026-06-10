@@ -2,7 +2,8 @@ import os
 import json
 import smtplib
 import time
-import sys  
+import sys 
+import subprocess 
 from email.mime.text import MIMEText          # 💡 누락되었던 MIME 임포트 주입
 from email.mime.multipart import MIMEMultipart  # 💡 누락되었던 MIME 임포트 주입
 import requests
@@ -182,12 +183,22 @@ def commit_and_push_progress():
         os.system('git add progress.json')
         os.system('git commit -m "CHORE: Update daily newsletter progress" || true')
         
-        # 💡 셸 신택스 에러를 완전히 지워버린 100% 정제된 순수 원격 push URL 구조
-        remote_url = f"https://x-access-token:{GITHUB_TOKEN}@[github.com/](https://github.com/){GITHUB_REPOSITORY}.git"
-        result = os.system(f'git push {remote_url} HEAD:master')
+        # 💡 자동 하이퍼링크 변환을 막기 위해 안전하게 분리 결합한 URL 문자열
+        github_domain = "github.com"
+        remote_url = f"https://x-access-token:{GITHUB_TOKEN}@{github_domain}/{GITHUB_REPOSITORY}.git"
         
-        if result != 0:
-            print("⚠️ [경고] Git Push에 실패했습니다. GitHub Actions Workflow의 Write 권한 설정을 확인하세요.")
+        # 💡 os.system 대신 subprocess를 사용하여 상세 에러 로그(stderr)를 캡처합니다.
+        result = subprocess.run(
+            ['git', 'push', remote_url, 'HEAD:master'],
+            capture_output=True,
+            text=True
+        )
+        
+        if result.returncode != 0:
+            print("⚠️ [경고] Git Push에 실패했습니다.")
+            print("================ [상세 에러 로그] ================")
+            print(result.stderr)  # 👈 정확한 실패 원인이 여기에 출력됩니다!
+            print("==================================================")
         else:
             print("▶ [성공] 진도 상태 Git Push 완료!")
 
