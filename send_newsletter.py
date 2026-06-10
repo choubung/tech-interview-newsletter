@@ -4,7 +4,8 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import requests
-import google.generativeai as genai
+# 💡 최신 공식 라이브러리 규격으로 import 변경
+from google import genai
 
 # ==========================================
 # 1. 환경 변수 및 설정 로드
@@ -14,19 +15,17 @@ GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD")
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN") 
 GITHUB_REPOSITORY = os.environ.get("GITHUB_REPOSITORY")
 
-# 💡 [리팩토링] 여러 수신자 이메일을 환경 변수에서 안전하게 파싱합니다.
-# Secrets에 RECEIVER_EMAILS 이름으로 "메일1, 메일2" 형태로 등록하시면 됩니다.
+# 여러 수신자 이메일 파싱
 RECEIVER_EMAILS_STR = os.environ.get("RECEIVER_EMAILS", "")
 RECEIVER_EMAILS = [email.strip() for email in RECEIVER_EMAILS_STR.split(",") if email.strip()]
 
-# 수신자 목록이 비어있을 때를 대비한 Fallback (기본 하드코딩값 유지)
 if not RECEIVER_EMAILS:
     RECEIVER_EMAILS = ["doubuhanmo16@gmail.com"]
 
 SENDER_EMAIL = "doubuhanmo16@gmail.com"
 
-# Gemini API 초기화
-genai.configure(api_key=GEMINI_API_KEY)
+# 💡 최신 google-genai 규격에 맞게 클라이언트 초기화
+client = genai.Client(api_key=GEMINI_API_KEY)
 
 PROGRESS_FILE = "progress.json"
 CURRICULUM_FILE = "curriculum.json"
@@ -54,7 +53,7 @@ def fetch_github_raw_content(repo_path):
         raise Exception(f"GitHub 파일을 읽어오는데 실패했습니다. URL: {raw_url} (Status: {response.status_code})")
 
 def generate_newsletter_with_gemini(title, content):
-    """Gemini API를 사용하여 취준생 맞춤형 기술 뉴스레터를 생성합니다."""
+    """최신 google-genai 라이브러리를 사용하여 뉴스레터를 생성합니다."""
     prompt = f"""
 너는 백엔드 개발자 채용을 담당하는 기술 면접관이자, 친절한 멘토야.
 취업 준비생이 등굣길이나 출근길에 15분 동안 몰입해서 읽기 좋은 풍부하고 깊이 있는 기술 뉴스레터를 작성해줘.
@@ -71,21 +70,21 @@ def generate_newsletter_with_gemini(title, content):
 [원본 마크다운 내용]:
 {content}
 """
-    # 💡 [핵심 수정] 2026년 기준 가장 안정적이고 확실한 범용 프리 티어 모델코드로 변경합니다.
-    # 대량 문맥 요약과 텍스트 생성에 최적화된 최신 가속화 엔진 명칭입니다.
-    model = genai.GenerativeModel('gemini-1.5-flash-latest')
-    response = model.generate_content(prompt)
+    # 💡 최신 패키지에서 표준으로 사용하는 공식 모델명 'gemini-2.5-flash'를 사용합니다.
+    # 추론 능력과 처리 속도가 대폭 개선된 최신 기본 모델입니다.
+    response = client.models.generate_content(
+        model='gemini-2.5-flash',
+        contents=prompt,
+    )
     return response.text
 
 def send_email_to_user(receiver, subject, body):
-    """단일 수신자에게 메일을 발송합니다."""
     msg = MIMEMultipart()
     msg['From'] = SENDER_EMAIL
     msg['To'] = receiver
     msg['Subject'] = subject
     msg.attach(MIMEText(body, 'plain', 'utf-8'))
 
-    # Gmail SMTP 서버 연결
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.starttls()
     server.login(SENDER_EMAIL, GMAIL_APP_PASSWORD)
@@ -108,48 +107,4 @@ def commit_and_push_progress():
 # 3. 메인 가동 프로세스
 # ==========================================
 def main():
-    curriculum = load_json_file(CURRICULUM_FILE, [])
-    progress = load_json_file(PROGRESS_FILE, {"current_index": 0})
-    current_idx = progress["current_index"]
-    
-    if current_idx >= len(curriculum):
-        print("🎉 축하합니다! 모든 커리큘럼 뉴스레터 발송이 완료되었습니다.")
-        return
-
-    target_item = curriculum[current_idx]
-    topic_title = target_item["title"]
-    repo_path = target_item["path"]
-    
-    print(f"📰 오늘의 주제 [{current_idx + 1}/{len(curriculum)}]: {topic_title}")
-    
-    try:
-        # 1. 깃허브에서 원본 마크다운 다운로드
-        raw_content = fetch_github_raw_content(repo_path)
-        
-        # 2. 제미나이를 통한 맞춤형 큐레이션 본문 생성
-        print("🤖 Gemini가 뉴스레터를 작성하고 있습니다...")
-        newsletter_body = generate_newsletter_with_gemini(topic_title, raw_content)
-        
-        # 3. 이메일 순차 발송 (하나가 실패해도 대포알이 멈추지 않도록 안전 루프 처리)
-        email_subject = f"[Dev-Digest] 오늘 자 백엔드 기술 배달: {topic_title}"
-        print(f"📬 총 {len(RECEIVER_EMAILS)}명의 구독자에게 발송을 시작합니다...")
-        
-        for email in RECEIVER_EMAILS:
-            try:
-                send_email_to_user(email, email_subject, newsletter_body)
-                print(f"   ✅ 발송 성공: {email}")
-            except Exception as mail_err:
-                print(f"   ❌ 발송 실패: {email} (사유: {mail_err})")
-        
-        # 4. 진도 한 칸 전진 및 저장
-        progress["current_index"] = current_idx + 1
-        save_json_file(PROGRESS_FILE, progress)
-        
-        # 5. GitHub 레포지토리에 동기화 변경 사항 반영
-        commit_and_push_progress()
-        
-    except Exception as e:
-        print(f"❌ [에러 발생] 프로세스가 중단되었습니다: {e}")
-
-if __name__ == "__main__":
-    main()
+    curriculum = load_json_file(CURRICUL
