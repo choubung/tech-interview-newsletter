@@ -83,7 +83,7 @@ def generate_newsletter_with_gemini(title, content):
 6. 🧮 점화식 및 수학적 관계 증명 상자 (맥락적 제한 적용):
    - 원본 기술 내용 중 알고리즘의 시간 복잡도 유도 과정, 수학적 점화식, 또는 메모리 주소 계산 공식처럼 '텍스트로 그냥 나열하면 모바일 화면에서 줄바꿈이 깨져 가독성이 망가질 수 있는 수식 연산 내용'이 있을 때만 단독 줄로 이 박스를 생성하십시오.
    - ⚠️ 단순 복잡도 표기(예: O(1), O(N))는 일반 문장 안에 <strong>O(1)</strong> 형태로 담백하게 녹여내고, 이 전용 박스는 오직 '공식과 관계식'에만 적용해야 합니다. (마크다운 수식 기호 $ 사용 절대 금지)
-   - 구조: <div style="background-color: rgba(135,131,120,0.08); padding: 8px 12px; border-radius: 4px; font-family: monospace; font-size: 13px; color: #eb5757; margin: 8px 0; font-weight: 600; white-space: nowrap; overflow-x: auto;">T(n) = T(n-1) + O(1) 등 핵심 관계식만 기술</div>
+   - 구조: <div style="background-color: rgba(135,131,120,0.08); padding: 8px 12px; border-radius: 4px; font-family: monospace; font-size: 13px; color: #eb5757; margin: 8px 0; font-weight: 600; white-space: nowrap; overflow-x: auto;">T(n) = T(n-1) + O(1) 등 공식 내용</div>
 7. ➖ 들여쓰기 한도 제한:
    - 본문 나열 시 `<ul>` 내부의 `<ul>` 중첩은 딱 2단계(하위 1단계)까지만 허용합니다. 그 이상 들여쓰지 마십시오.
 
@@ -186,6 +186,7 @@ def commit_and_push_progress():
         os.system('git add progress.json')
         os.system('git commit -m "CHORE: Update daily newsletter progress" || true')
         
+        # 🛠️ 깨끗하게 정제된 올바른 remote_url 구조
         remote_url = f"https://x-access-token:{GITHUB_TOKEN}@[github.com/](https://github.com/){GITHUB_REPOSITORY}.git"
         result = os.system(f'git push {remote_url} HEAD:master')
         
@@ -218,7 +219,9 @@ def main():
         print("🤖 Gemini가 뉴스레터를 작성하고 있습니다...")
         newsletter_body = generate_newsletter_with_gemini(topic_title, raw_content)
         
-        email_subject = f"[Dev-Digest] 오늘 자 백엔드 기술 배달: {topic_title}"
+        # 🌊 이메일 제목 양식 수정 반영
+        email_subject = f"[🌊 오늘의 CS 토픽] {topic_title}"
+        
         print(f"📬 총 {len(RECEIVER_EMAILS)}명의 구독자에게 발송을 시작합니다...")
         
         for email in RECEIVER_EMAILS:
