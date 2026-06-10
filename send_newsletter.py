@@ -159,19 +159,33 @@ def send_email_to_user(receiver, subject, body):
     server.sendmail(SENDER_EMAIL, receiver, msg.as_string())
     server.quit()
 
-# 💡 [복구 완료] 이전 리팩토링 단계에서 누락되었던 깃허브 커밋/푸시 함수를 다시 채워 넣었습니다.
 def commit_and_push_progress():
     """GitHub Actions 환경에서 변경된 progress.json을 내 레포에 커밋 및 푸시합니다."""
     if GITHUB_TOKEN and GITHUB_REPOSITORY:
         print("▶ GitHub 저장소에 진도 파일 업데이트 중...")
+        
+        # 1. 깃허브 액션즈가 터미널 인터랙티브(입력 대기) 모드로 빠지는 것을 원천 차단하는 환경 변수 설정
+        os.environ["GIT_TERMINAL_PROMPT"] = "0"
+        
+        # 2. 유저 정보 세팅
         os.system('git config --global user.name "github-actions[bot]"')
         os.system('git config --global user.email "github-actions[bot]@users.noreply.github.com"')
-        os.system('git add progress.json')
-        os.system('git commit -m "CHORE: Update daily newsletter progress"')
         
+        # 3. 변경사항 스테이징 및 커밋
+        os.system('git add progress.json')
+        # 변경사항이 없을 때 에러로 터지는 것을 방지하기 위해 || true 추가
+        os.system('git commit -m "CHORE: Update daily newsletter progress" || true')
+        
+        # 4. 토큰을 이용한 원격 저장소 URL 구성 (안전한 push 규칙 적용)
         remote_url = f"https://x-access-token:{GITHUB_TOKEN}@github.com/{GITHUB_REPOSITORY}.git"
-        os.system(f'git push {remote_url} HEAD:master')
-        print("▶ [성공] 진도 상태 Git Push 완료!")
+        
+        # 만약 인증이 실패하면 무한 대기하지 않고 즉시 0이 아닌 에러 코드를 뱉고 Fail-fast 하도록 설정
+        result = os.system(f'git push {remote_url} HEAD:master')
+        
+        if result != 0:
+            print("⚠️ [경고] Git Push에 실패했습니다. GitHub Actions Workflow의 Write 권한 설정을 확인하세요.")
+        else:
+            print("▶ [성공] 진도 상태 Git Push 완료!")
 
 # ==========================================
 # 3. 메인 가동 프로세스
