@@ -18,7 +18,7 @@ GITHUB_REPOSITORY = os.environ.get("GITHUB_REPOSITORY") # 예: "유저명/레포
 
 # 이메일 수신자 설정 (본인 Gmail 주소 입력)
 RECEIVER_EMAIL = "doubuhanmo16@gmail.com" 
-SENDER_EMAIL = "doubuhanmo16@gmail.com@gmail.com"
+SENDER_EMAIL = "doubuhanmo16@gmail.com"
 
 # Gemini API 설정
 genai.configure(api_key=GEMINI_API_KEY)
