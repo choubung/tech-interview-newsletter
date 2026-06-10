@@ -106,46 +106,75 @@ def send_email_to_user(receiver, subject, body):
     msg['To'] = receiver
     msg['Subject'] = subject
     
-    msg.attach(MIMEText(body, 'html', 'utf-8'))
-
-    server = smtplib.SMTP('smtp.gmail.com', 587)
-    server.starttls()
-    server.login(SENDER_EMAIL, GMAIL_APP_PASSWORD)
-    server.sendmail(SENDER_EMAIL, receiver, msg.as_string())
-    server.quit()
-
-def send_email_to_user(receiver, subject, body):
-    msg = MIMEMultipart()
-    msg['From'] = SENDER_EMAIL
-    msg['To'] = receiver
-    msg['Subject'] = subject
-    
-    # 💡 [디자인-컨텐츠 분리] 뉴스레터의 시각적 가독성을 완벽하게 고정하는 CSS 템플릿 프레임
-    fixed_style_template = f"""
-    <div style="font-size: 15.5px; line-height: 1.7; color: #333333; font-family: 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
+    # 💡 [디자인-컨텐츠 분리] 노션(Notion) 감성의 깔끔하고 세련된 고정 CSS 템플릿 프레임
+    notion_style_template = f"""
+    <div style="font-size: 14.5px; line-height: 1.8; color: #37352f; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', 'Malgun Gothic', sans-serif; max-width: 600px; margin: 0 auto; padding: 24px 16px;">
         <style>
-            h2 {{ font-size: 22px; color: #111111; margin-top: 30px; margin-bottom: 16px; border-bottom: 2px solid #eaeaea; padding-bottom: 8px; font-weight: bold; }}
-            h3 {{ font-size: 18px; color: #222222; margin-top: 24px; margin-bottom: 12px; font-weight: bold; }}
-            p {{ margin-top: 0; margin-bottom: 16px; text-align: justify; }}
-            blockquote {{ margin: 20px 0; padding: 12px 16px; background-color: #f8f9fa; border-left: 4px solid #333333; color: #555555; font-style: normal; font-weight: 500; }}
-            ul {{ margin-top: 0; margin-bottom: 16px; padding-left: 20px; }}
-            li {{ margin-bottom: 12px; }}
-            strong {{ color: #000000; font-weight: bold; }}
-            hr {{ border: 0; border-top: 1px dashed #eaeaea; margin: 30px 0; }}
+            /* 대제목 (Notion H1/H2 감성): 세련된 네이비/블루 계열 색상 및 하단 구분선 */
+            h2 {{ 
+                font-size: 20px; 
+                color: #1a365d; 
+                margin-top: 32px; 
+                margin-bottom: 12px; 
+                border-bottom: 1px solid #e1e4e6; 
+                padding-bottom: 6px; 
+                font-weight: 600; 
+            }}
+            /* 소제목 (Notion H3 감성): 약간 깊은 블루그레이 톤으로 위계 분리 */
+            h3 {{ 
+                font-size: 16.5px; 
+                color: #2c5282; 
+                margin-top: 24px; 
+                margin-bottom: 8px; 
+                font-weight: 600; 
+            }}
+            /* 본문 텍스트: 노션 특유의 짙은 차콜색(#37352f) 적용 */
+            p {{ 
+                margin-top: 0; 
+                margin-bottom: 12px; 
+                text-align: justify; 
+            }}
+            /* 인용구 (Notion Blockquote 감성): 연한 회색 배경과 도톰한 왼쪽 바 */
+            blockquote {{ 
+                margin: 16px 0; 
+                padding: 10px 14px; 
+                background-color: #f1f3f5; 
+                border-left: 3px solid #4a5568; 
+                color: #4a5568; 
+                font-style: normal; 
+            }}
+            /* 리스트 스타일 */
+            ul {{ 
+                margin-top: 0; 
+                margin-bottom: 12px; 
+                padding-left: 20px; 
+            }}
+            li {{ 
+                margin-bottom: 8px; 
+            }}
+            strong {{ 
+                color: #111111; 
+                font-weight: 600; 
+            }}
+            /* 섹션 구분 점선 */
+            hr {{ 
+                border: 0; 
+                border-top: 1px dashed #e1e4e6; 
+                margin: 28px 0; 
+            }}
         </style>
         {body}
     </div>
     """
     
     # MIME 타입을 'html'로 명시하여 메일 클라이언트가 스타일을 해석하도록 설정
-    msg.attach(MIMEText(fixed_style_template, 'html', 'utf-8'))
+    msg.attach(MIMEText(notion_style_template, 'html', 'utf-8'))
 
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.starttls()
     server.login(SENDER_EMAIL, GMAIL_APP_PASSWORD)
     server.sendmail(SENDER_EMAIL, receiver, msg.as_string())
     server.quit()
-
 # ==========================================
 # 3. 메인 가동 프로세스
 # ==========================================
