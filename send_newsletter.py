@@ -4,7 +4,6 @@ import smtplib
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import requests
-# 💡 최신 공식 라이브러리 규격으로 import 변경
 from google import genai
 
 # ==========================================
@@ -15,16 +14,16 @@ GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD")
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN") 
 GITHUB_REPOSITORY = os.environ.get("GITHUB_REPOSITORY")
 
-# 여러 수신자 이메일 파싱
+# 수신자 이메일 파싱
 RECEIVER_EMAILS_STR = os.environ.get("RECEIVER_EMAILS", "")
 RECEIVER_EMAILS = [email.strip() for email in RECEIVER_EMAILS_STR.split(",") if email.strip()]
 
 if not RECEIVER_EMAILS:
     RECEIVER_EMAILS = ["doubuhanmo16@gmail.com"]
 
-SENDER_EMAIL = "doubuhanmo16@gmail.com"
+SENDER_EMAIL = os.environ.get("SENDER_EMAIL", "doubuhanmo16@gmail.com")
 
-# 💡 최신 google-genai 규격에 맞게 클라이언트 초기화
+# 구글 제미나이 클라이언트 초기화
 client = genai.Client(api_key=GEMINI_API_KEY)
 
 PROGRESS_FILE = "progress.json"
@@ -50,10 +49,9 @@ def fetch_github_raw_content(repo_path):
     if response.status_code == 200:
         return response.text
     else:
-        raise Exception(f"GitHub 파일을 읽어오는데 실패했습니다. URL: {raw_url} (Status: {response.status_code})")
+        raise Exception(f"GitHub 파일을 읽어오는데 실패했습니다. URL: {raw_url}")
 
 def generate_newsletter_with_gemini(title, content):
-    """최신 google-genai 라이브러리를 사용하여 뉴스레터를 생성합니다."""
     prompt = f"""
 너는 백엔드 개발자 채용을 담당하는 기술 면접관이자, 친절한 멘토야.
 취업 준비생이 등굣길이나 출근길에 15분 동안 몰입해서 읽기 좋은 풍부하고 깊이 있는 기술 뉴스레터를 작성해줘.
@@ -70,8 +68,6 @@ def generate_newsletter_with_gemini(title, content):
 [원본 마크다운 내용]:
 {content}
 """
-    # 💡 최신 패키지에서 표준으로 사용하는 공식 모델명 'gemini-2.5-flash'를 사용합니다.
-    # 추론 능력과 처리 속도가 대폭 개선된 최신 기본 모델입니다.
     response = client.models.generate_content(
         model='gemini-2.5-flash',
         contents=prompt,
@@ -107,7 +103,42 @@ def commit_and_push_progress():
 # 3. 메인 가동 프로세스
 # ==========================================
 def main():
-    # 이 부분을 아래와 같이 정확하게 고쳐주세요!
     curriculum = load_json_file(CURRICULUM_FILE, [])
     progress = load_json_file(PROGRESS_FILE, {"current_index": 0})
     current_idx = progress["current_index"]
+    
+    if current_idx >= len(curriculum):
+        print("🎉 모든 커리큘럼 뉴스레터 발송이 완료되었습니다.")
+        return
+
+    target_item = curriculum[current_idx]
+    topic_title = target_item["title"]
+    repo_path = target_item["path"]
+    
+    print(f"📰 오늘의 주제 [{current_idx + 1}/{len(curriculum)}]: {topic_title}")
+    
+    try:
+        raw_content = fetch_github_raw_content(repo_path)
+        
+        print("🤖 Gemini가 뉴스레터를 작성하고 있습니다...")
+        newsletter_body = generate_newsletter_with_gemini(topic_title, raw_content)
+        
+        email_subject = f"[Dev-Digest] 오늘 자 백엔드 기술 배달: {topic_title}"
+        print(f"📬 총 {len(RECEIVER_EMAILS)}명의 구독자에게 발송을 시작합니다...")
+        
+        for email in RECEIVER_EMAILS:
+            try:
+                send_email_to_user(email, email_subject, newsletter_body)
+                print(f"   ✅ 발송 성공: {email}")
+            except Exception as mail_err:
+                print(f"   ❌ 발송 실패: {email} (사유: {mail_err})")
+        
+        progress["current_index"] = current_idx + 1
+        save_json_file(PROGRESS_FILE, progress)
+        commit_and_push_progress()
+        
+    except Exception as e:
+        print(f"❌ [에러 발생] 프로세스가 중단되었습니다: {e}")
+
+if __name__ == "__main__":
+    main()
