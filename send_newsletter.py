@@ -183,11 +183,12 @@ def commit_and_push_progress():
         os.system('git add progress.json')
         os.system('git commit -m "CHORE: Update daily newsletter progress" || true')
         
-        # 💡 자동 하이퍼링크 변환을 막기 위해 안전하게 분리 결합한 URL 문자열
-        github_domain = "github.com"
-        remote_url = f"https://x-access-token:{GITHUB_TOKEN}@{github_domain}/{GITHUB_REPOSITORY}.git"
+        remote_url = f"https://x-access-token:{GITHUB_TOKEN}@github.com/{GITHUB_REPOSITORY}.git"
         
-        # 💡 os.system 대신 subprocess를 사용하여 상세 에러 로그(stderr)를 캡처합니다.
+        # 💡 [핵심 추가] Push 전, 원격 저장소의 최신 커밋(내가 웹에서 수정한 코드 등)을 당겨와서 충돌을 방어합니다.
+        print("▶ 원격 저장소 최신 상태 동기화(Pull) 중...")
+        subprocess.run(['git', 'pull', '--rebase', remote_url, 'master'], capture_output=True)
+        
         result = subprocess.run(
             ['git', 'push', remote_url, 'HEAD:master'],
             capture_output=True,
@@ -197,7 +198,7 @@ def commit_and_push_progress():
         if result.returncode != 0:
             print("⚠️ [경고] Git Push에 실패했습니다.")
             print("================ [상세 에러 로그] ================")
-            print(result.stderr)  # 👈 정확한 실패 원인이 여기에 출력됩니다!
+            print(result.stderr)
             print("==================================================")
         else:
             print("▶ [성공] 진도 상태 Git Push 완료!")
