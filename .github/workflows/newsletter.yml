@@ -33,7 +33,7 @@ jobs:
         SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
         
         # progress.json을 자동 커밋/푸시하기 위해 내 PAT를 바인딩합니다.
-        GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         GITHUB_REPOSITORY: ${{ github.repository }}
         
         # Node.js 20 사용 중단 경고를 우회하기 위한 환경 변수
