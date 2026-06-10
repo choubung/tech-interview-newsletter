@@ -223,8 +223,11 @@ def main():
     try:
         raw_content = fetch_github_raw_content(repo_path)
         
-        print("🤖 Gemini가 뉴스레터를 작성하고 있습니다...")
-        newsletter_body = generate_newsletter_with_gemini(topic_title, raw_content)
+        # print("🤖 Gemini가 뉴스레터를 작성하고 있습니다...")
+        # newsletter_body = generate_newsletter_with_gemini(topic_title, raw_content)
+
+        # 💡 [테스트용 임시 코드] 제미나이 대신 고정된 텍스트를 강제로 꽂아 넣습니다.
+        newsletter_body = "<h2>🌊 깃허브 Push 및 이메일 발송 테스트 완료!</h2><p>이 메일이 무사히 도착하고, 깃허브 레포지토리의 progress.json 숫자가 2로 올라갔다면 모든 백엔드 파이프라인이 완벽하게 뚫린 것입니다.</p>"
         
         email_subject = f"[🌊 오늘의 CS 토픽] {topic_title}"
         
