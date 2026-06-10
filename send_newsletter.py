@@ -79,7 +79,8 @@ def send_email_to_user(receiver, subject, body):
     msg['From'] = SENDER_EMAIL
     msg['To'] = receiver
     msg['Subject'] = subject
-    msg.attach(MIMEText(body, 'plain', 'utf-8'))
+    
+    msg.attach(MIMEText(body, 'html', 'utf-8'))
 
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.starttls()
