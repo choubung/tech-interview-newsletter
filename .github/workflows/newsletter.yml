@@ -28,7 +28,7 @@ jobs:
       env:
         GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
-        # 내 레포에 write하기 위해 3-1단계에서 등록한 PAT를 바인딩합니다.
         GITHUB_TOKEN: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
         GITHUB_REPOSITORY: ${{ github.repository }}
+        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
       run: python send_newsletter.py
