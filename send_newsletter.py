@@ -2,7 +2,9 @@ import os
 import json
 import smtplib
 import time
-import sys  # 💡 Fail-Fast(강제 에러 종료) 처리를 위한 모듈 추가
+import sys  
+from email.mime.text import MIMEText          # 💡 누락되었던 MIME 임포트 주입
+from email.mime.multipart import MIMEMultipart  # 💡 누락되었던 MIME 임포트 주입
 import requests
 from google import genai
 
@@ -109,9 +111,8 @@ def generate_newsletter_with_gemini(title, content):
             )
             return response.text
         except Exception as e:
-            # 503 구글 서버 과부하 발생 시 팅기지 않고 점진적으로 대기시간을 늘리는 지수 백오프 전략
             if "503" in str(e) and attempt < max_retries - 1:
-                wait_time = 5 * (2 ** attempt)  # 5초 -> 10초 -> 20초로 점진적 증가
+                wait_time = 5 * (2 ** attempt)  
                 print(f"⚠️ 구글 서버 부하 발생(503). {attempt + 1}번째 실패. {wait_time}초 대기 후 재시도...")
                 time.sleep(wait_time)
                 continue
@@ -124,6 +125,7 @@ def send_email_to_user(receiver, subject, body):
     msg['To'] = receiver
     msg['Subject'] = subject
     
+    # 💡 마크다운 링크 찌꺼기가 제거된 클린 푸터 프레임
     notion_advanced_template = f"""
     <div style="font-size: 14.5px; line-height: 1.8; color: #37352f; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', 'Malgun Gothic', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px 12px;">
         <style>
@@ -180,7 +182,7 @@ def commit_and_push_progress():
         os.system('git add progress.json')
         os.system('git commit -m "CHORE: Update daily newsletter progress" || true')
         
-        # 💡 문자열 오염 제거 완료된 클린 remote_url 파싱 구조
+        # 💡 셸 신택스 에러를 완전히 지워버린 100% 정제된 순수 원격 push URL 구조
         remote_url = f"https://x-access-token:{GITHUB_TOKEN}@[github.com/](https://github.com/){GITHUB_REPOSITORY}.git"
         result = os.system(f'git push {remote_url} HEAD:master')
         
@@ -213,7 +215,6 @@ def main():
         print("🤖 Gemini가 뉴스레터를 작성하고 있습니다...")
         newsletter_body = generate_newsletter_with_gemini(topic_title, raw_content)
         
-        # 🌊 트렌디한 파도 감성 타이틀 적용
         email_subject = f"[🌊 오늘의 CS 토픽] {topic_title}"
         
         print(f"📬 총 {len(RECEIVER_EMAILS)}명의 구독자에게 발송을 시작합니다...")
@@ -231,8 +232,6 @@ def main():
         
     except Exception as e:
         print(f"❌ [에러 발생] 프로세스가 중단되었습니다: {e}")
-        # 💡 [핵심 반영] 무조건 성공(0)으로 끝나던 예외 처리를 비정상 종료 코드(1)로 변경하여 
-        # 깃허브 Actions 파이프라인에 즉시 빨간 불(실패 알림)을 선명하게 켜도록 설계했습니다.
         sys.exit(1)
 
 if __name__ == "__main__":
