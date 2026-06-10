@@ -107,5 +107,7 @@ def commit_and_push_progress():
 # 3. 메인 가동 프로세스
 # ==========================================
 def main():
-    curriculum = load_json_file(CURRICUL
+    # 이 부분을 아래와 같이 정확하게 고쳐주세요!
+    curriculum = load_json_file(CURRICULUM_FILE, [])
     progress = load_json_file(PROGRESS_FILE, {"current_index": 0})
+    current_idx = progress["current_index"]
