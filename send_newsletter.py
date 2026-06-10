@@ -71,8 +71,7 @@ def generate_newsletter_with_gemini(title, content):
 [원본 마크다운 내용]:
 {content}
 """
-    
-    model = genai.GenerativeModel('gemini-1.5-flash')
+    model = genai.GenerativeModel('gemini-pro')
     response = model.generate_content(prompt)
     return response.text
 
