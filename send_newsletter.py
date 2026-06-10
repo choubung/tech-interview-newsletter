@@ -1,6 +1,7 @@
 import os
 import json
 import smtplib
+import time
 from email.mime.text import MIMEText
 from email.mime.multipart import MIMEMultipart
 import requests
@@ -52,6 +53,7 @@ def fetch_github_raw_content(repo_path):
         raise Exception(f"GitHub 파일을 읽어오는데 실패했습니다. URL: {raw_url}")
 
 def generate_newsletter_with_gemini(title, content):
+    """Gemini API를 사용하여 뉴스레터를 생성합니다. (503 에러 대비 3회 재시도 포함)"""
     prompt = f"""
 너는 백엔드 개발자 채용을 담당하는 기술 면접관이자, 친절한 멘토야.
 취업 준비생이 읽기 좋은 풍부하고 깊이 있는 기술 뉴스레터를 작성해줘.
@@ -71,11 +73,23 @@ def generate_newsletter_with_gemini(title, content):
 [원본 마크다운 내용]:
 {content}
 """
-    response = client.models.generate_content(
-        model='gemini-2.5-flash',
-        contents=prompt,
-    )
-    return response.text
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            response = client.models.generate_content(
+                model='gemini-2.5-flash',
+                contents=prompt,
+            )
+            return response.text
+        except Exception as e:
+            # 503 에러가 감지되었고, 아직 재시도 횟수가 남았다면 5초 대기 후 루프 재개
+            if "503" in str(e) and attempt < max_retries - 1:
+                print(f"⚠️ 구글 서버 부하 발생(503). {attempt + 1}번째 재시도 중... (5초 대기)")
+                time.sleep(5)
+                continue
+            else:
+                # 3번 다 실패했거나 다른 치명적인 에러라면 예외를 밖으로 던짐
+                raise e
 
 def send_email_to_user(receiver, subject, body):
     msg = MIMEMultipart()
