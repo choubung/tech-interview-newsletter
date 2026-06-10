@@ -56,27 +56,29 @@ def generate_newsletter_with_gemini(title, content):
     """Gemini API를 사용하여 뉴스레터를 생성합니다. (503 에러 대비 3회 재시도 포함)"""
     prompt = f"""
 당신은 백엔드 개발자 채용을 담당하는 기술 면접관이자 아키텍트입니다.
-제공된 원본 마크다운 기술 콘텐츠를 바탕으로, 깊이 있고 전문성이 돋보이는 고품질 뉴스레터 본문을 작성해주세요.
+제공된 원본 마크다운 기술 콘텐츠를 바탕으로, 노션(Notion) 워크스페이스처럼 정갈하고 압도적인 시각적 가독성을 가진 뉴스레터 본문을 작성해주세요.
 
 [🎯 출력 형식 규격 - 최우선 필수 사항]
 - 반드시 이메일 본문에 바로 삽입 가능한 순수 HTML 태그 형태로만 응답해주세요.
-- ⚠️ 절대 답변 앞뒤에 마크다운 코드 블록 기호(```html 이나 ```)를 붙이지 마십시오. 첫 글자는 HTML 태그로 시작해야 합니다.
-- ⚠️ 전체를 감싸는 큰 <div> 태그는 절대 생성하지 마십시오. 디자인 프레임은 외부에서 자동으로 주입될 것입니다.
-- ⚠️ 태그 내부에 style="..." 같은 인라인 속성은 절대로 넣지 말고, 온전히 순수한 구조 태그(<h2>, <h3>, <p>, <blockquote>, <ul>, <li>, <strong>)로만 문장 구조를 잡아주세요.
+- ⚠️ 절대 답변 앞뒤에 마크다운 코드 블록 기호(```html 이나 ```)를 붙이지 마십시오.
+- ⚠️ 전체를 감싸는 큰 <div> 태그는 절대 생성하지 마십시오.
+
+[🎨 노션 스타일에 맞춘 텍스트 태그 규칙]
+1. 💡 대제목 앞 이모티콘: 모든 개념 대제목(<h2> 태그)을 작성할 때는 무조건 맨 앞에 '💡 ' 전구 이모티콘을 붙여주세요. (예: <h2>💡 대제목 내용</h2>)
+2. 볼드(Bold) 제한: <strong> 태그는 문장 전체가 아닌, 오직 핵심적인 기술 개념 '키워드(단어)' 단독으로만 적용해야 합니다.
+3. 🔷 파란색 하이라이트 (개념 정의): 기술 키워드에 대한 '본질적인 정의나 설명 문장' 중 정말 중요한 부분은 <span class="hl-blue">설명문</span> 태그로 감싸주세요. (남발하지 말고 문단별 가장 핵심 정의 1개 정도만 지정)
+4. 🔶 노란색 하이라이트 (핵심 특징): 기술의 장단점이나 '실무 아키텍처 관점의 핵심 특징적 구절'은 <span class="hl-yellow">특징문</span> 태그로 감싸주세요.
+5. ➖ 본문 내 대시(-) 문장 구현: 본문에서 세부 특징, 알고리즘 종류, 비교 항목 등을 나열할 때는 그냥 텍스트 줄바꿈을 쓰지 말고, 반드시 <ul>과 <li> 태그를 활용해 정돈된 대시 형태의 흐름을 만들어주세요.
 
 [✍️ 컨텐츠 작성 가이드라인]
-1. 제목: 뉴스레터 주간지 감성을 살려 가장 묵직하고 매력적인 헤드라인을 뽑아 <h2> 태그로 감싸주세요.
+1. 제목: 주간지 감성을 살려 묵직하고 매력적인 헤드라인을 뽑아 <h2> 태그로 감싸주세요. (전구 이모티콘 포함)
 2. 서론 (인삿말/자아 표출 금지): 
-   - "안녕하세요", "멘토입니다", "구독자 여러분" 같은 피상적인 인사말이나 수식어는 절대 사용하지 마십시오.
-   - AI 특유의 응원 메시지나 마무리 감성 문구도 전면 배제해 주세요.
-   - 글의 시작은 곧바로 <p> 태그를 사용하여, 오늘 다룰 키워드가 하드웨어(CPU 캐시 지역성, 메모리 구조) 관점이나 백엔드 실무 아키텍처 환경에서 왜 치명적으로 중요한지 기술적 본질과 묵직한 인사이트를 던지며 시작해주세요.
-3. 본문 심화 해설: 
-   - 원본 마크다운의 핵심 원리를 흐려지지 않게 풍부하게 보완하여 <p>와 <h3> 태그를 교차 사용해 설명해주세요.
-   - 문단 중에서 가장 핵심이 되는 요약 명제나 강조할 핵심 관점은 딱 한 번 <blockquote> 태그를 사용해 격리해주세요.
-   - 중요 기술 키워드는 <strong> 태그를 활용해주세요.
+   - 인사말이나 불필요한 수식어, AI 특유의 응원 멘트는 전면 배제해 주세요.
+   - 곧바로 <p> 태그를 시작하여, 오늘 다룰 키워드가 하드웨어(CPU 캐시 지역성, 메모리 구조) 관점이나 백엔드 실무 환경에서 왜 치명적으로 중요한지 담백하고 묵직하게 짚어주세요.
+3. 본문 심화 해설: 원본 마크다운의 알맹이를 흐리지 않게 풍부하게 보완하되, 위의 파란색/노란색 하이라이트 규칙을 정확히 녹여서 작성해주세요.
 4. 기술 면접 대비 예상 질문 & 모범 답안: 
-   - 문단 하단에 <hr> 태그를 넣어 구분선을 한 줄 치고, <h2> 태그로 "📡 기술 면접 대비 예상 질문 & 모범 답안" 섹션을 열어주세요.
-   - <ul>과 <li> 태그를 활용하되, 각 질문은 <li><strong>Q. 질문 내용</strong><br>A. 모범 답안 내용</li> 구조로 묶어서 가독성을 극대화해주세요.
+   - 문단 하단에 <hr> 태그를 넣어 구분선을 한 줄 치고, <h2> 태그로 "💡 📡 기술 면접 대비 예상 질문 & 모범 답안" 섹션을 열어주세요.
+   - 질문과 답안 항목 역시 <ul>과 <li> 구조로 깔끔하게 정리해 주세요.
 
 [원본 마크다운 제목]: {title}
 [원본 마크다운 내용]:
@@ -104,24 +106,48 @@ def send_email_to_user(receiver, subject, body):
     msg['To'] = receiver
     msg['Subject'] = subject
     
-    # 💡 노션(Notion) 감성의 깔끔하고 세련된 고정 CSS 템플릿 프레임
-    notion_style_template = f"""
+    # 💡 노션(Notion) 고유의 형광펜 하이라이트 클래스가 추가된 고정 CSS 템플릿
+    notion_advanced_template = f"""
     <div style="font-size: 14.5px; line-height: 1.8; color: #37352f; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', 'Malgun Gothic', sans-serif; max-width: 600px; margin: 0 auto; padding: 24px 16px;">
         <style>
-            h2 {{ font-size: 20px; color: #1a365d; margin-top: 32px; margin-bottom: 12px; border-bottom: 1px solid #e1e4e6; padding-bottom: 6px; font-weight: 600; }}
-            h3 {{ font-size: 16.5px; color: #2c5282; margin-top: 24px; margin-bottom: 8px; font-weight: 600; }}
+            /* 대제목: 노션 H1 감성, 하단 은은한 경계선 고정 */
+            h2 {{ 
+                font-size: 19px; 
+                color: #1a365d; 
+                margin-top: 32px; 
+                margin-bottom: 12px; 
+                border-bottom: 1px solid #e1e4e6; 
+                padding-bottom: 6px; 
+                font-weight: 600; 
+            }}
+            /* 소제목 */
+            h3 {{ 
+                font-size: 16px; 
+                color: #2c5282; 
+                margin-top: 24px; 
+                margin-bottom: 8px; 
+                font-weight: 600; 
+            }}
             p {{ margin-top: 0; margin-bottom: 12px; text-align: justify; }}
-            blockquote {{ margin: 16px 0; padding: 10px 14px; background-color: #f1f3f5; border-left: 3px solid #4a5568; color: #4a5568; font-style: normal; }}
-            ul {{ margin-top: 0; margin-bottom: 12px; padding-left: 20px; }}
-            li {{ margin-bottom: 8px; }}
+            blockquote {{ margin: 16px 0; padding: 10px 14px; background-color: #f1f3f5; border-left: 3px solid #4a5568; color: #4a5568; }}
+            
+            /* 본문 가독성을 위한 대시 리스트 스타일 */
+            ul {{ margin-top: 0; margin-bottom: 12px; padding-left: 16px; list-style-type: none; }}
+            li {{ margin-bottom: 6px; position: relative; }}
+            li::before {{ content: "–"; position: absolute; left: -14px; color: #37352f; }}
+            
             strong {{ color: #111111; font-weight: 600; }}
             hr {{ border: 0; border-top: 1px dashed #e1e4e6; margin: 28px 0; }}
+
+            /* 🎨 노션 스타일 실시간 형광펜 하이라이트 속성 */
+            .hl-blue {{ background-color: #e3f2fd; padding: 2px 4px; border-radius: 3px; color: #0d47a1; }}
+            .hl-yellow {{ background-color: #fffde7; padding: 2px 4px; border-radius: 3px; color: #f57f17; }}
         </style>
         {body}
     </div>
     """
     
-    msg.attach(MIMEText(notion_style_template, 'html', 'utf-8'))
+    msg.attach(MIMEText(notion_advanced_template, 'html', 'utf-8'))
 
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.starttls()
