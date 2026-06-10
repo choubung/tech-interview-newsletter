@@ -64,25 +64,31 @@ def generate_newsletter_with_gemini(title, content):
 - ⚠️ 전체를 감싸는 큰 <div> 태그는 생성하지 마십시오.
 
 [🎨 모바일 최적화 인라인 스타일 및 구조 규칙]
-1. 💡 전구 이모티콘 및 제목 넘버링 통제:
+1. 💡 전구 이모티콘 및 제목 넘버링 통제 (+ 하단 구분선 필수):
    - 오직 '기술 개념 핵심 대제목(<h2> 태그)'에만 맨 앞에 '💡 ' 전구 이모티콘을 붙이고, 숫자는 절대 붙이지 마십시오. (예: <h2>💡 배열의 메모리 특성</h2>)
-   - 대제목 하위의 '일반 세부 소제목(<h3> 태그)'에는 이모티콘을 빼고, 반드시 '1)', '2)' 형식의 숫자를 붙여주세요. (예: <h3>1) 배열 크기 계산의 이해</h3>)
-2. 🔷 파란색 하이라이트 (개념 정의):
-   - 기술 키워드에 대한 본질적 정의 문장(단 한 문장)은 반드시 다음 태그를 정확히 사용하여 감싸주세요: <span style="background-color: #e3f2fd; padding: 2px 4px; border-radius: 3px; color: #0d47a1; font-weight: 600;">정의문</span>
-3. 🔶 노란색 하이라이트 (핵심 특징):
-   - 실무 관점의 핵심 트레이드오프나 중요 성능 특징(15자 내외)은 반드시 다음 태그를 정확히 사용하여 감싸주세요: <span style="background-color: #fffde7; padding: 2px 4px; border-radius: 3px; color: #f57f17; font-weight: 600;">핵심특징</span>
-4. 💻 모바일 가독성 보장형 고정 코드 블록:
-   - 본문에 소스 코드가 포함될 경우, 메일 앱에서 디자인이 절대 깨지지 않도록 반드시 아래 구조의 인라인 스타일 래퍼로 감싸서 출력하십시오. 마크다운 기호(```)는 절대 금지합니다.
+   - ⚠️ [중요] 대제목과 대제목 본문 사이의 명확한 경계를 위해, 모든 <h2> 태그가 끝나면 곧바로 하단에 은은한 점선 구분선인 `<hr>` 태그를 무조건 한 줄 삽입해 주세요. 이외의 공간에는 구분선을 쓰지 않습니다.
+     (구조 예시: <h2>💡 대제목</h2><hr><p>대제목 본문 시작...</p>)
+   - 대제목 하위의 '일반 세부 소제목(<h3> 태그)'에는 이모티콘과 하단 구분선을 절대 빼고, 대신 반드시 '1)', '2)' 형식의 숫자를 붙여주세요. (예: <h3>1) 배열 크기 계산의 이해</h3>)
+2. 볼드(Bold) 제한: <strong> 태그는 문장 전체가 아닌, 오직 핵심적인 기술 개념 '키워드(단어)' 단독으로만 적용해야 합니다.
+3. 🔷 파란색 하이라이트 (개념 정의):
+   - 기술 키워드에 대한 본질적 정의 문장(단 한 문장)은 반드시 다음 태그를 정확히 사용하여 감싸주세요 (글자색 검정 차콜 유지, 굵기 보통 설정): 
+     <span style="background-color: #e3f2fd; padding: 2px 4px; border-radius: 3px; font-weight: normal; color: #37352f;">정의문</span>
+4. 🔶 노란색 하이라이트 (핵심 특징):
+   - 실무 관점의 핵심 트레이드오프나 중요 성능 특징(15자 내외)은 반드시 다음 태그를 정확히 사용하여 감싸주세요 (글자색 검정 차콜 유지, 굵기 보통 설정): 
+     <span style="background-color: #fffde7; padding: 2px 4px; border-radius: 3px; font-weight: normal; color: #37352f;">핵심특징</span>
+5. 💻 실무 소스 코드 전용 상자 (필요한 경우에만 제한적 적용):
+   - ⚠️ 원본 내용에 구체적인 소스 코드 예시(자바, C++ 등)가 포함되어 있고, 이를 보여주는 것이 개념 이해에 '필수적'이라고 판단될 때만 이 상자를 사용하십시오. 뻔한 설명문은 절대 코드 블록으로 만들지 마십시오.
+   - 메일 앱에서 디자인이 절대 깨지지 않도록 반드시 아래 구조의 인라인 스타일 래퍼로 감싸서 출력하십시오. (마크다운 기호 ``` 사용 절대 금지)
    - 구조: <pre style="background-color: #f7f6f3; padding: 12px; border-radius: 6px; border-left: 4px solid #dfdfde; margin: 12px 0; overflow-x: auto; white-space: pre;"><code style="font-family: 'SFMono-Regular', Consolas, monospace; font-size: 12.5px; color: #37352f; line-height: 1.5;">코드 내용</code></pre>
-5. 🧮 점화식 및 수학 공식 박스화 규칙:
-   - 마크다운 수식 기호($)는 절대 금지합니다.
-   - 점화식이나 공식은 일반 본문 문장에 섞어 쓰면 모바일에서 줄바꿈이 깨지므로, 반드시 아래처럼 독립된 노션 인라인 코드 감성 상자에 담아 단독 줄로 렌더링하십시오.
-   - 구조: <div style="background-color: rgba(135,131,120,0.08); padding: 8px 12px; border-radius: 4px; font-family: monospace; font-size: 13px; color: #eb5757; margin: 8px 0; font-weight: 600; white-space: nowrap; overflow-x: auto;">T(n) = T(n-1) + O(1) 등 공식 내용</div>
-6. ➖ 들여쓰기 한도 제한:
+6. 🧮 점화식 및 수학적 관계 증명 상자 (맥락적 제한 적용):
+   - 원본 기술 내용 중 알고리즘의 시간 복잡도 유도 과정, 수학적 점화식, 또는 메모리 주소 계산 공식처럼 '텍스트로 그냥 나열하면 모바일 화면에서 줄바꿈이 깨져 가독성이 망가질 수 있는 수식 연산 내용'이 있을 때만 단독 줄로 이 박스를 생성하십시오.
+   - ⚠️ 단순 복잡도 표기(예: O(1), O(N))는 일반 문장 안에 <strong>O(1)</strong> 형태로 담백하게 녹여내고, 이 전용 박스는 오직 '공식과 관계식'에만 적용해야 합니다. (마크다운 수식 기호 $ 사용 절대 금지)
+   - 구조: <div style="background-color: rgba(135,131,120,0.08); padding: 8px 12px; border-radius: 4px; font-family: monospace; font-size: 13px; color: #eb5757; margin: 8px 0; font-weight: 600; white-space: nowrap; overflow-x: auto;">T(n) = T(n-1) + O(1) 등 핵심 관계식만 기술</div>
+7. ➖ 들여쓰기 한도 제한:
    - 본문 나열 시 `<ul>` 내부의 `<ul>` 중첩은 딱 2단계(하위 1단계)까지만 허용합니다. 그 이상 들여쓰지 마십시오.
 
 [✍️ 기술 면접 섹션 작성 규격 - 모바일 특화]
-- 본문이 끝나면 곧바로 <h2> 태그로 "📡 기술 면접 대비 예상 질문 & 모범 답안" 섹션을 열어주세요. (전구 금지)
+- 본문이 끝나면 곧바로 <h2> 태그로 "📡 기술 면접 대비 예상 질문 & 모범 답안" 섹션을 열어주세요. (⚠️ 이 제목은 전구 금지이며, 바로 아래에 똑같이 <hr> 구분선을 한 줄 넣어준 뒤 Q&A 내용을 시작해야 합니다.)
 - ⚠️ 들여쓰기로 인한 모바일 가독성 저하를 막기 위해, 이 섹션에서는 <ul>과 <li> 태그, 그리고 대시(-) 기호를 절대 사용하지 마십시오.
 - 대신, 아래와 같이 정갈한 패딩 블록 구조를 활용해 질문과 답안의 레이아웃 위계를 확실하게 찢어주세요.
 - 구조 규칙:
@@ -154,7 +160,7 @@ def send_email_to_user(receiver, subject, body):
         {body}
         
         <div style="margin-top: 40px; padding-top: 16px; border-top: 1px solid #e1e4e6; font-size: 11.5px; color: #868685; text-align: center;">
-            본 콘텐츠는 <a href="https://github.com/gyoogle/tech-interview-for-developer" target="_blank" style="color: #2c5282; text-decoration: none; font-weight: 500;">tech-interview-for-developer</a> 오픈소스 레포지토리를 기반으로 큐레이션되었습니다.
+            본 콘텐츠는 <a href="[https://github.com/gyoogle/tech-interview-for-developer](https://github.com/gyoogle/tech-interview-for-developer)" target="_blank" style="color: #2c5282; text-decoration: none; font-weight: 500;">tech-interview-for-developer</a> 오픈소스 레포지토리를 기반으로 큐레이션되었습니다.
         </div>
     </div>
     """
@@ -172,22 +178,15 @@ def commit_and_push_progress():
     if GITHUB_TOKEN and GITHUB_REPOSITORY:
         print("▶ GitHub 저장소에 진도 파일 업데이트 중...")
         
-        # 1. 깃허브 액션즈가 터미널 인터랙티브(입력 대기) 모드로 빠지는 것을 원천 차단하는 환경 변수 설정
         os.environ["GIT_TERMINAL_PROMPT"] = "0"
         
-        # 2. 유저 정보 세팅
         os.system('git config --global user.name "github-actions[bot]"')
         os.system('git config --global user.email "github-actions[bot]@users.noreply.github.com"')
         
-        # 3. 변경사항 스테이징 및 커밋
         os.system('git add progress.json')
-        # 변경사항이 없을 때 에러로 터지는 것을 방지하기 위해 || true 추가
         os.system('git commit -m "CHORE: Update daily newsletter progress" || true')
         
-        # 4. 토큰을 이용한 원격 저장소 URL 구성 (안전한 push 규칙 적용)
-        remote_url = f"https://x-access-token:{GITHUB_TOKEN}@github.com/{GITHUB_REPOSITORY}.git"
-        
-        # 만약 인증이 실패하면 무한 대기하지 않고 즉시 0이 아닌 에러 코드를 뱉고 Fail-fast 하도록 설정
+        remote_url = f"https://x-access-token:{GITHUB_TOKEN}@[github.com/](https://github.com/){GITHUB_REPOSITORY}.git"
         result = os.system(f'git push {remote_url} HEAD:master')
         
         if result != 0:
