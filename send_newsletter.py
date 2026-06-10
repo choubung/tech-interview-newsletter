@@ -47,7 +47,7 @@ def save_json_file(filename, data):
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 def fetch_github_raw_content(repo_path):
-    raw_url = f"https://raw.githubusercontent.com/gyoogle/tech-interview-for-developer/main/{repo_path}"
+    raw_url = f"https://raw.githubusercontent.com/gyoogle/tech-interview-for-developer/master/{repo_path}"
     response = requests.get(raw_url)
     if response.status_code == 200:
         return response.text
@@ -125,7 +125,7 @@ def send_email_to_user(receiver, subject, body):
     msg['From'] = SENDER_EMAIL
     msg['To'] = receiver
     msg['Subject'] = subject
-    
+
     # 💡 마크다운 링크 찌꺼기가 제거된 클린 푸터 프레임
     notion_advanced_template = f"""
     <div style="font-size: 14.5px; line-height: 1.8; color: #37352f; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', 'Malgun Gothic', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px 12px;">
@@ -161,7 +161,7 @@ def send_email_to_user(receiver, subject, body):
         </div>
     </div>
     """
-    
+
     msg.attach(MIMEText(notion_advanced_template, 'html', 'utf-8'))
 
     server = smtplib.SMTP('smtp.gmail.com', 587)
@@ -185,10 +185,11 @@ def commit_and_push_progress():
         
         remote_url = f"https://x-access-token:{GITHUB_TOKEN}@github.com/{GITHUB_REPOSITORY}.git"
         
-        # 💡 [핵심 추가] Push 전, 원격 저장소의 최신 커밋(내가 웹에서 수정한 코드 등)을 당겨와서 충돌을 방어합니다.
+        # 💡 [핵심 수정 1] 당겨올 브랜치 이름을 master에서 main으로 변경
         print("▶ 원격 저장소 최신 상태 동기화(Pull) 중...")
         subprocess.run(['git', 'pull', '--rebase', remote_url, 'main'], capture_output=True)
         
+        # 💡 [핵심 수정 2] 밀어넣을 타겟 브랜치를 HEAD:master에서 HEAD:main으로 변경
         result = subprocess.run(
             ['git', 'push', remote_url, 'HEAD:main'],
             capture_output=True,
@@ -202,7 +203,7 @@ def commit_and_push_progress():
             print("==================================================")
         else:
             print("▶ [성공] 진도 상태 Git Push 완료!")
-
+            
 # ==========================================
 # 3. 메인 가동 프로세스
 # ==========================================
@@ -210,7 +211,7 @@ def main():
     curriculum = load_json_file(CURRICULUM_FILE, [])
     progress = load_json_file(PROGRESS_FILE, {"current_index": 0})
     current_idx = progress["current_index"]
-    
+
     if current_idx >= len(curriculum):
         print("🎉 모든 커리큘럼 뉴스레터 발송이 완료되었습니다.")
         return
@@ -218,33 +219,33 @@ def main():
     target_item = curriculum[current_idx]
     topic_title = target_item["title"]
     repo_path = target_item["path"]
-    
+
     print(f"📰 오늘의 주제 [{current_idx + 1}/{len(curriculum)}]: {topic_title}")
-    
+
     try:
         raw_content = fetch_github_raw_content(repo_path)
-        
+
         # print("🤖 Gemini가 뉴스레터를 작성하고 있습니다...")
         # newsletter_body = generate_newsletter_with_gemini(topic_title, raw_content)
 
         # 💡 [테스트용 임시 코드] 제미나이 대신 고정된 텍스트를 강제로 꽂아 넣습니다.
         newsletter_body = "<h2>🌊 깃허브 Push 및 이메일 발송 테스트 완료!</h2><p>이 메일이 무사히 도착하고, 깃허브 레포지토리의 progress.json 숫자가 2로 올라갔다면 모든 백엔드 파이프라인이 완벽하게 뚫린 것입니다.</p>"
-        
+
         email_subject = f"[🌊 오늘의 CS 토픽] {topic_title}"
-        
+
         print(f"📬 총 {len(RECEIVER_EMAILS)}명의 구독자에게 발송을 시작합니다...")
-        
+
         for email in RECEIVER_EMAILS:
             try:
                 send_email_to_user(email, email_subject, newsletter_body)
                 print(f"   ✅ 발송 성공: {email}")
             except Exception as mail_err:
                 print(f"   ❌ 발송 실패: {email} (사유: {mail_err})")
-        
+
         progress["current_index"] = current_idx + 1
         save_json_file(PROGRESS_FILE, progress)
         commit_and_push_progress()
-        
+
     except Exception as e:
         print(f"❌ [에러 발생] 프로세스가 중단되었습니다: {e}")
         sys.exit(1)
