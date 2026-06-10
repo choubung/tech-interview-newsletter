@@ -2,8 +2,7 @@ import os
 import json
 import smtplib
 import time
-from email.mime.text import MIMEText
-from email.mime.multipart import MIMEMultipart
+import sys  # 💡 Fail-Fast(강제 에러 종료) 처리를 위한 모듈 추가
 import requests
 from google import genai
 
@@ -53,7 +52,7 @@ def fetch_github_raw_content(repo_path):
         raise Exception(f"GitHub 파일을 읽어오는데 실패했습니다. URL: {raw_url}")
 
 def generate_newsletter_with_gemini(title, content):
-    """Gemini API를 사용하여 뉴스레터를 생성합니다. (503 에러 대비 3회 재시도 포함)"""
+    """Gemini API를 사용하여 뉴스레터를 생성합니다. (503 에러 대비 3회 지수 백오프 재시도 적용)"""
     prompt = f"""
 당신은 백엔드 개발자 채용을 담당하는 기술 면접관이자 아키텍트입니다.
 제공된 원본 마크다운 기술 콘텐츠를 바탕으로, 모바일(스마트폰) 메일 앱 화면에서도 가독성이 절대 깨지지 않는 노션 스타일의 뉴스레터를 작성해주세요.
@@ -110,9 +109,11 @@ def generate_newsletter_with_gemini(title, content):
             )
             return response.text
         except Exception as e:
+            # 503 구글 서버 과부하 발생 시 팅기지 않고 점진적으로 대기시간을 늘리는 지수 백오프 전략
             if "503" in str(e) and attempt < max_retries - 1:
-                print(f"⚠️ 구글 서버 부하 발생(503). {attempt + 1}번째 재시도 중... (5초 대기)")
-                time.sleep(5)
+                wait_time = 5 * (2 ** attempt)  # 5초 -> 10초 -> 20초로 점진적 증가
+                print(f"⚠️ 구글 서버 부하 발생(503). {attempt + 1}번째 실패. {wait_time}초 대기 후 재시도...")
+                time.sleep(wait_time)
                 continue
             else:
                 raise e
@@ -123,11 +124,9 @@ def send_email_to_user(receiver, subject, body):
     msg['To'] = receiver
     msg['Subject'] = subject
     
-    # 💡 모바일 가독성 극대화 및 외부 스타일 차단 방어용 노션 프레임
     notion_advanced_template = f"""
     <div style="font-size: 14.5px; line-height: 1.8; color: #37352f; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', 'Malgun Gothic', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px 12px;">
         <style>
-            /* 기본 구조 위계 */
             h2 {{ 
                 font-size: 18.5px; 
                 color: #1a365d; 
@@ -146,15 +145,10 @@ def send_email_to_user(receiver, subject, body):
             }}
             p {{ margin-top: 0; margin-bottom: 10px; text-align: justify; }}
             blockquote {{ margin: 16px 0; padding: 10px 14px; background-color: #f1f3f5; border-left: 3px solid #4a5568; color: #4a5568; font-size: 14px; }}
-            
-            /* 본문 내 대시 리스트 (최대 2단계 제약 조건 반영) */
             ul {{ margin-top: 0; margin-bottom: 10px; padding-left: 14px; list-style-type: none; }}
             li {{ margin-bottom: 5px; position: relative; }}
             li::before {{ content: "–"; position: absolute; left: -12px; color: #37352f; }}
-            
-            /* 중첩 들여쓰기 2단계 제한 및 여백 축소 */
             ul ul {{ margin-top: 4px; margin-bottom: 4px; padding-left: 14px; }}
-            
             strong {{ color: #111111; font-weight: 600; }}
         </style>
         {body}
@@ -186,7 +180,7 @@ def commit_and_push_progress():
         os.system('git add progress.json')
         os.system('git commit -m "CHORE: Update daily newsletter progress" || true')
         
-        # 🛠️ 깨끗하게 정제된 올바른 remote_url 구조
+        # 💡 문자열 오염 제거 완료된 클린 remote_url 파싱 구조
         remote_url = f"https://x-access-token:{GITHUB_TOKEN}@[github.com/](https://github.com/){GITHUB_REPOSITORY}.git"
         result = os.system(f'git push {remote_url} HEAD:master')
         
@@ -219,7 +213,7 @@ def main():
         print("🤖 Gemini가 뉴스레터를 작성하고 있습니다...")
         newsletter_body = generate_newsletter_with_gemini(topic_title, raw_content)
         
-        # 🌊 이메일 제목 양식 수정 반영
+        # 🌊 트렌디한 파도 감성 타이틀 적용
         email_subject = f"[🌊 오늘의 CS 토픽] {topic_title}"
         
         print(f"📬 총 {len(RECEIVER_EMAILS)}명의 구독자에게 발송을 시작합니다...")
@@ -237,6 +231,9 @@ def main():
         
     except Exception as e:
         print(f"❌ [에러 발생] 프로세스가 중단되었습니다: {e}")
+        # 💡 [핵심 반영] 무조건 성공(0)으로 끝나던 예외 처리를 비정상 종료 코드(1)로 변경하여 
+        # 깃허브 Actions 파이프라인에 즉시 빨간 불(실패 알림)을 선명하게 켜도록 설계했습니다.
+        sys.exit(1)
 
 if __name__ == "__main__":
     main()
