@@ -60,8 +60,9 @@ def generate_newsletter_with_gemini(title, content):
 
 [🎯 출력 형식 규격 - 필수]
 - 반드시 이메일 본문에 바로 삽입 가능한 순수 HTML 태그 형태로만 응답해줘.
-- ⚠️ 절대 답변 앞뒤에 마크다운 코드 블록 기호(```html 이나 ```)를 붙이지 마. 
-- 스타일을 넣고 싶다면 각 태그 내부에 inline style(예: style="color: #2b2b2b;")을 활용해줘.
+- ⚠️ 절대 답변 앞뒤에 마크다운 코드 블록 기호(```html 이나 ```)를 붙이지 마.
+- ⚠️ 전체 본문을 <div style="font-size: 15.5px; line-height: 1.7; color: #333333; font-family: 'Malgun Gothic', sans-serif;"> ... </div> 태그로 한 번 감싸서 출력해줘. (기본보다 1.1배 키운 한글 가독성 최적화 크기)
+- 스타일을 세부적으로 넣고 싶다면 각 태그 내부에 inline style(예: <strong style="color: #000000;">)을 활용해줘.
 
 [요구사항]
 1. 제목: 주간/일간 뉴스레터 감성을 살려 <h2> 태그로 매력적인 기술 제목을 뽑아줘.
