@@ -8,6 +8,7 @@ from email.mime.text import MIMEText          # 💡 누락되었던 MIME 임포
 from email.mime.multipart import MIMEMultipart  # 💡 누락되었던 MIME 임포트 주입
 import requests
 from google import genai
+from urllib.parse import quote
 
 # ==========================================
 # 1. 환경 변수 및 설정 로드
@@ -47,6 +48,7 @@ def save_json_file(filename, data):
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 def fetch_github_raw_content(repo_path):
+    encoded_path = quote(repo_path)
     raw_url = f"https://raw.githubusercontent.com/gyoogle/tech-interview-for-developer/master/{repo_path}"
     response = requests.get(raw_url)
     if response.status_code == 200:
