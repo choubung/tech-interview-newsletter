@@ -63,13 +63,15 @@
 
   { "title": "Network - OSI 7 Layer", "path": "Computer Science/Network/OSI 7 계층.md" },
   { "title": "Network - TCP 3 & 4 Way Handshake", "path": "Computer Science/Network/TCP 3 way handshake & 4 way handshake.md" },
-  { "title": "Network - TCP/IP 흐름제어 & 혼잡제어", "path": "Computer Science/Network/TCP IP 흐름제어 & 혼잡제어.md" },
+  { "title": "Network - TCP 흐름제어 & 혼잡제어", "path": "Computer Science/Network/TCP (흐름제어혼잡제어).md" },
   { "title": "Network - UDP", "path": "Computer Science/Network/UDP.md" },
   { "title": "Network - HTTP vs HTTPS", "path": "Computer Science/Network/HTTP & HTTPS.md" },
-  { "title": "Network - TLS/SSL Handshake", "path": "Computer Science/Network/TLS SSL handshake.md" },
+  { "title": "Network - 대칭키 & 공개키 (암호화)", "path": "Computer Science/Network/대칭키 & 공개키.md" },
+  { "title": "Network - TLS Handshake", "path": "Computer Science/Network/TLS HandShake.md" },
   { "title": "Network - 로드 밸런싱", "path": "Computer Science/Network/로드 밸런싱(Load Balancing).md" },
-  { "title": "Network - Sync/Async & Blocking/Non-Blocking", "path": "Computer Science/Network/Blocking,Non-blocking & Synchronous,Asynchronous.md" },
-
+  { "title": "Network - Sync/Async & Blocking/Non-Blocking", "path": "Computer Science/Network/[Network] Blocking,Non-blocking & Synchronous,Asynchronous.md" },
+  { "title": "Network - DNS", "path": "Computer Science/Network/DNS.md" },
+  
   { "title": "Design Pattern - Singleton", "path": "Computer Science/Design Pattern/Singleton Pattern.md" },
   { "title": "Design Pattern - Strategy", "path": "Computer Science/Design Pattern/Strategy Pattern.md" },
   { "title": "Design Pattern - MVC", "path": "Computer Science/Design Pattern/MVC Pattern.md" }
