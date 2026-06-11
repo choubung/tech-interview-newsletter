@@ -209,50 +209,55 @@ def commit_and_push_progress():
             print("▶ [성공] 진도 상태 Git Push 완료!")
             
 # ==========================================
-# 3. 메인 가동 프로세스
+# 3. [테스트 모드] 전체 커리큘럼 파싱 검증 프로세스
 # ==========================================
 def main():
     curriculum = load_json_file(CURRICULUM_FILE, [])
-    progress = load_json_file(PROGRESS_FILE, {"current_index": 0})
-    current_idx = progress["current_index"]
+    
+    print(f"🔍 [전수 검사 시작] 총 {len(curriculum)}개의 커리큘럼 경로를 검증합니다...")
+    print("⚠️ 이 모드에서는 Gemini API와 이메일 발송을 하지 않으므로 쿼터가 소진되지 않습니다.\n")
+    
+    fail_count = 0
+    success_count = 0
+    failed_items = []
 
-    if current_idx >= len(curriculum):
-        print("🎉 모든 커리큘럼 뉴스레터 발송이 완료되었습니다.")
-        return
+    for idx, item in enumerate(curriculum):
+        topic_title = item["title"]
+        repo_path = item["path"]
+        
+        try:
+            # 💡 핵심: 깃허브 원본 파일만 실제로 긁어와 봅니다.
+            raw_content = fetch_github_raw_content(repo_path)
+            
+            # 파일이 비어있지 않고 잘 읽혔는지 검증
+            if raw_content and len(raw_content).strip() > 0:
+                print(f"   🟢 [{idx + 1}/{len(curriculum)}] 성공: {topic_title}")
+                success_count += 1
+            else:
+                print(f"   🟡 [{idx + 1}/{len(curriculum)}] 경고 (빈 파일): {topic_title}")
+                fail_count += 1
+                failed_items.append((topic_title, "파일 내용이 비어있음"))
+                
+        except Exception as e:
+            # 404 Not Found 등의 에러 발생 시 잡아내기
+            print(f"   🔴 [{idx + 1}/{len(curriculum)}] 실패: {topic_title} -> 사유: {e}")
+            fail_count += 1
+            failed_items.append((topic_title, str(e)))
 
-    target_item = curriculum[current_idx]
-    topic_title = target_item["title"]
-    repo_path = target_item["path"]
+    print("\n==================================================")
+    print(f"📊 [검증 완료 보고서]")
+    print(f" - 총 아이템 수: {len(curriculum)}개")
+    print(f" - 정상 파싱 성공: {success_count}개")
+    print(f" - 에러 발생 실패: {fail_count}개")
+    print("==================================================")
 
-    print(f"📰 오늘의 주제 [{current_idx + 1}/{len(curriculum)}]: {topic_title}")
-
-    try:
-        raw_content = fetch_github_raw_content(repo_path)
-
-        print("🤖 Gemini가 뉴스레터를 작성하고 있습니다...")
-        newsletter_body = generate_newsletter_with_gemini(topic_title, raw_content)
-
-        # 💡 [테스트용 임시 코드] 제미나이 대신 고정된 텍스트를 강제로 꽂아 넣습니다.
-        # newsletter_body = "<h2>🌊 깃허브 Push 및 이메일 발송 테스트 완료!</h2><p>이 메일이 무사히 도착하고, 깃허브 레포지토리의 progress.json 숫자가 2로 올라갔다면 모든 백엔드 파이프라인이 완벽하게 뚫린 것입니다.</p>"
-
-        email_subject = f"[🌊 오늘의 CS 토픽] {topic_title}"
-
-        print(f"📬 총 {len(RECEIVER_EMAILS)}명의 구독자에게 발송을 시작합니다...")
-
-        for email in RECEIVER_EMAILS:
-            try:
-                send_email_to_user(email, email_subject, newsletter_body)
-                print(f"   ✅ 발송 성공: {email}")
-            except Exception as mail_err:
-                print(f"   ❌ 발송 실패: {email} (사유: {mail_err})")
-
-        progress["current_index"] = current_idx + 1
-        save_json_file(PROGRESS_FILE, progress)
-        commit_and_push_progress()
-
-    except Exception as e:
-        print(f"❌ [에러 발생] 프로세스가 중단되었습니다: {e}")
+    if fail_count > 0:
+        print("\n❌ 깨진 링크나 오타가 발견되었습니다. 아래 리스트를 수정해야 합니다:")
+        for title, err in failed_items:
+            print(f" 📂 [{title}] -> {err}")
+        # 깃허브 Actions에 실패(빨간 불)를 띄워 어떤 파일이 깨졌는지 알림
         sys.exit(1)
-
-if __name__ == "__main__":
-    main()
+    else:
+        print("\n🎉 완벽합니다! 65개 모든 커리큘럼 파일 경로에 오타가 없으며 100% 정상 작동합니다.")
+        # 모든 경로가 완벽하므로 성공(초록 불) 종료
+        sys.exit(0)
