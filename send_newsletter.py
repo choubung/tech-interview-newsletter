@@ -48,13 +48,15 @@ def save_json_file(filename, data):
         json.dump(data, f, ensure_ascii=False, indent=2)
 
 def fetch_github_raw_content(repo_path):
+    # 💡 [교정] quote 처리된 인코딩 변수를 원격 URL 매핑에 정확하게 바인딩합니다.
     encoded_path = quote(repo_path)
-    raw_url = f"https://raw.githubusercontent.com/gyoogle/tech-interview-for-developer/master/{repo_path}"
+    raw_url = f"https://raw.githubusercontent.com/gyoogle/tech-interview-for-developer/master/{encoded_path}"
+    
     response = requests.get(raw_url)
     if response.status_code == 200:
         return response.text
     else:
-        raise Exception(f"GitHub 파일을 읽어오는데 실패했습니다. URL: {raw_url}")
+        raise Exception(f"GitHub 파일을 읽어오는데 실패했습니다. (Status: {response.status_code})")
 
 def generate_newsletter_with_gemini(title, content):
     """Gemini API를 사용하여 뉴스레터를 생성합니다. (503 에러 대비 3회 지수 백오프 재시도 적용)"""
@@ -130,7 +132,6 @@ def send_email_to_user(receiver, subject, body):
     msg['To'] = receiver
     msg['Subject'] = subject
 
-    # 💡 마크다운 링크 찌꺼기가 제거된 클린 푸터 프레임
     notion_advanced_template = f"""
     <div style="font-size: 14.5px; line-height: 1.8; color: #37352f; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', 'Malgun Gothic', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px 12px;">
         <style>
@@ -187,20 +188,18 @@ def commit_and_push_progress():
         os.system('git add progress.json')
         os.system('git commit -m "CHORE: Update daily newsletter progress" || true')
         
-        remote_url = f"https://x-access-token:{GITHUB_TOKEN}@github.com/{GITHUB_REPOSITORY}.git"
+        remote_url = f"https://x-access-token:{GITHUB_TOKEN}@[github.com/](https://github.com/){GITHUB_REPOSITORY}.git"
         
-        # 💡 [핵심 수정 1] 당겨올 브랜치 이름을 master에서 main으로 변경
         print("▶ 원격 저장소 최신 상태 동기화(Pull) 중...")
         subprocess.run(['git', 'pull', '--rebase', remote_url, 'main'], capture_output=True)
         
-        # 💡 [핵심 수정 2] 밀어넣을 타겟 브랜치를 HEAD:master에서 HEAD:main으로 변경
         result = subprocess.run(
             ['git', 'push', remote_url, 'HEAD:main'],
             capture_output=True,
             text=True
         )
         
-        if result.returncode != 0:
+        if result != 0:
             print("⚠️ [경고] Git Push에 실패했습니다.")
             print("================ [상세 에러 로그] ================")
             print(result.stderr)
@@ -226,11 +225,10 @@ def main():
         repo_path = item["path"]
         
         try:
-            # 💡 핵심: 깃허브 원본 파일만 실제로 긁어와 봅니다.
             raw_content = fetch_github_raw_content(repo_path)
             
-            # 파일이 비어있지 않고 잘 읽혔는지 검증
-            if raw_content and len(raw_content).strip() > 0:
+            # 💡 [교정] len() 결과 정수가 아닌 내부 문자열에 .strip()을 적용하도록 위치 조정
+            if raw_content and len(raw_content.strip()) > 0:
                 print(f"   🟢 [{idx + 1}/{len(curriculum)}] 성공: {topic_title}")
                 success_count += 1
             else:
@@ -239,7 +237,6 @@ def main():
                 failed_items.append((topic_title, "파일 내용이 비어있음"))
                 
         except Exception as e:
-            # 404 Not Found 등의 에러 발생 시 잡아내기
             print(f"   🔴 [{idx + 1}/{len(curriculum)}] 실패: {topic_title} -> 사유: {e}")
             fail_count += 1
             failed_items.append((topic_title, str(e)))
@@ -255,9 +252,10 @@ def main():
         print("\n❌ 깨진 링크나 오타가 발견되었습니다. 아래 리스트를 수정해야 합니다:")
         for title, err in failed_items:
             print(f" 📂 [{title}] -> {err}")
-        # 깃허브 Actions에 실패(빨간 불)를 띄워 어떤 파일이 깨졌는지 알림
         sys.exit(1)
     else:
         print("\n🎉 완벽합니다! 65개 모든 커리큘럼 파일 경로에 오타가 없으며 100% 정상 작동합니다.")
-        # 모든 경로가 완벽하므로 성공(초록 불) 종료
         sys.exit(0)
+
+if __name__ == "__main__":
+    main()
