@@ -4,8 +4,8 @@ import smtplib
 import time
 import sys 
 import subprocess 
-from email.mime.text import MIMEText          # 💡 누락되었던 MIME 임포트 주입
-from email.mime.multipart import MIMEMultipart  # 💡 누락되었던 MIME 임포트 주입
+from email.mime.text import MIMEText          
+from email.mime.multipart import MIMEMultipart 
 import requests
 from google import genai
 from urllib.parse import quote
@@ -61,6 +61,8 @@ def generate_newsletter_with_gemini(title, content):
     prompt = f"""
 당신은 백엔드 개발자 채용을 담당하는 기술 면접관이자 아키텍트입니다.
 제공된 원본 마크다운 기술 콘텐츠를 바탕으로, 모바일(스마트폰) 메일 앱 화면에서도 가독성이 절대 깨지지 않는 노션 스타일의 뉴스레터를 작성해주세요.
+"안녕하세요", "멘토 M입니다", "예비 개발자 여러분" 같은 피상적인 인삿말이나 수식어는 절대 사용하지 마세요.
+AI 특유의 응원 멘트나 마무리 감성 문구도 전면 배제해주세요.
 
 [🎯 출력 형식 규격 - 최우선 필수 사항]
 - 반드시 이메일 본문에 바로 삽입 가능한 순수 HTML 태그 형태로만 응답해주세요.
