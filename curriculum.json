@@ -72,7 +72,13 @@
   { "title": "Network - Sync/Async & Blocking/Non-Blocking", "path": "Computer Science/Network/[Network] Blocking,Non-blocking & Synchronous,Asynchronous.md" },
   { "title": "Network - DNS", "path": "Computer Science/Network/DNS.md" },
   
+  { "title": "Design Pattern - Overview", "path": "Computer Science/Design Pattern/[Design Pattern] Overview.md" },
+  { "title": "Design Pattern - SOLID 원칙", "path": "Computer Science/Design Pattern/SOLID.md" },
   { "title": "Design Pattern - Singleton", "path": "Computer Science/Design Pattern/Singleton Pattern.md" },
   { "title": "Design Pattern - Strategy", "path": "Computer Science/Design Pattern/Strategy Pattern.md" },
-  { "title": "Design Pattern - MVC", "path": "Computer Science/Design Pattern/MVC Pattern.md" }
+  { "title": "Design Pattern - Observer", "path": "Computer Science/Design Pattern/Observer pattern.md" },
+  { "title": "Design Pattern - Factory Method", "path": "Computer Science/Design Pattern/Design Pattern_Factory Method.md" },
+  { "title": "Design Pattern - Template Method", "path": "Computer Science/Design Pattern/Template Method Pattern.md" },
+  { "title": "Design Pattern - Adapter", "path": "Computer Science/Design Pattern/Adapter Pattern.md" },
+  { "title": "Design Pattern - Composite", "path": "Computer Science/Design Pattern/Composite Pattern.md" }
 ]
