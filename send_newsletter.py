@@ -76,13 +76,13 @@ AI 특유의 응원 멘트나 마무리 감성 문구도 전면 배제해주세�
      (구조 예시: <h2>💡 대제목</h2><hr><p>대제목 본문 시작...</p>)
    - 대제목 하위의 '일반 세부 소제목(<h3> 태그)'에는 이모티콘과 하단 구분선을 절대 빼고, 대신 반드시 '1)', '2)' 형식의 숫자를 붙여주세요. (예: <h3>1) 배열 크기 계산의 이해</h3>)
 2. 볼드(Bold) 제한: <strong> 태그는 문장 전체가 아닌, 오직 핵심적인 기술 개념 '키워드(단어)' 단독으로만 적용해야 합니다.
-3. 🔷 파란색 하이라이트 (개념 정의):
-   - 기술 키워드에 대한 본질적 정의 문장(단 한 문장)은 반드시 다음 태그를 정확히 사용하여 감싸주세요 (글자색 검정 차콜 유지, 굵기 보통 설정): 
-     <span style="background-color: #e3f2fd; padding: 2px 4px; border-radius: 3px; font-weight: normal; color: #37352f;">정의문</span>
-4. 🔶 노란색 하이라이트 (핵심 특징):
-   - 실무 관점의 핵심 트레이드오프나 중요 성능 특징(15자 내외)은 반드시 다음 태그를 정확히 사용하여 감싸주세요 (글자색 검정 차콜 유지, 굵기 보통 설정): 
-     <span style="background-color: #fffde7; padding: 2px 4px; border-radius: 3px; font-weight: normal; color: #37352f;">핵심특징</span>
-5. 💻 실무 소스 코드 전용 상자 (필요한 경우에만 제한적 적용):
+3. 🔷 파란색 하이라이트 (엄격한 개념 정의 전용):
+   - 오직 특정 기술 키워드의 '사전적/기술적 본질을 정의하는 단 한 문장'에만 사용하십시오. (예: "배열(Array)은 연관된 데이터를 연속적인 메모리 공간에 할당하는 자료구조입니다.")
+   - ⚠️ [엄격한 금지 사항] "효율적인 설계를 위해 ~가 중요합니다" 같은 일반적인 조언, 중요성 강조, 결론, 단순 서술형 문장에는 절대 파란색을 사용하지 마십시오. 파란색은 오로지 'A는 B이다' 형태의 명확한 정의문에만 허용됩니다.
+   - 태그: <span style="background-color: #e3f2fd; padding: 2px 4px; border-radius: 3px; font-weight: normal; color: #37352f;">정의문</span>
+4. 🔶 노란색 하이라이트 (핵심 특징 및 중요 강조):
+   - 실무 관점의 핵심 트레이드오프, 중요 성능 특징, 또는 면접 및 실무에서 개발자가 반드시 유념해야 할 '중요한 결론이나 조언'에 폭넓게 사용하십시오. (위 파란색 하이라이트 조건에 부합하지 않는 모든 '중요 강조 문장'은 무조건 노란색으로 처리합니다.)
+   - 태그: <span style="background-color: #fffde7; padding: 2px 4px; border-radius: 3px; font-weight: normal; color: #37352f;">핵심특징 및 중요문장</span>5. 💻 실무 소스 코드 전용 상자 (필요한 경우에만 제한적 적용):
    - ⚠️ 원본 내용에 구체적인 소스 코드 예시(자바, C++ 등)가 포함되어 있고, 이를 보여주는 것이 개념 이해에 '필수적'이라고 판단될 때만 이 상자를 사용하십시오. 뻔한 설명문은 절대 코드 블록으로 만들지 마십시오.
    - 메일 앱에서 디자인이 절대 깨지지 않도록 반드시 아래 구조의 인라인 스타일 래퍼로 감싸서 출력하십시오. (마크다운 기호 ``` 사용 절대 금지)
    - 구조: <pre style="background-color: #f7f6f3; padding: 12px; border-radius: 6px; border-left: 4px solid #dfdfde; margin: 12px 0; overflow-x: auto; white-space: pre;"><code style="font-family: 'SFMono-Regular', Consolas, monospace; font-size: 12.5px; color: #37352f; line-height: 1.5;">코드 내용</code></pre>
