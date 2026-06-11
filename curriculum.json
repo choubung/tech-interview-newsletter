@@ -26,13 +26,14 @@
   { "title": "Java - Serialization (직렬화)", "path": "Language/[Java] 직렬화(Serialization).md" },
   { "title": "Java - Record", "path": "Language/[java] Record.md" },
 
-  { "title": "Spring - Bean Scope", "path": "Spring/[Spring] Bean Scope.md" },
-  { "title": "Spring - MVC Framework", "path": "Spring/[Spring] MVC Framework.md" },
-  { "title": "Spring Boot - SpringApplication", "path": "Spring/[Spring Boot] SpringApplication.md" },
-  { "title": "Spring Boot - Test Code", "path": "Spring/[Spring Boot] Test Code.md" },
-  { "title": "Spring - JPA 기초", "path": "Spring/JPA.md" },
-  { "title": "Spring - JPA Dirty Checking", "path": "Spring/[Spring Data JPA] 더티 체킹(Dirty Checking).md" },
-
+  { "title": "Spring - Bean Scope", "path": "Web/Spring/[Spring] Bean Scope.md" },
+  { "title": "Spring - MVC Framework", "path": "Web/Spring/Spring MVC.md" },
+  { "title": "Spring Security - Authentication & Authorization", "path": "Web/Spring/Spring Security - Authentication and Authorization.md" },
+  { "title": "Spring Boot - SpringApplication", "path": "Web/Spring/[Spring Boot] SpringApplication.md" },
+  { "title": "Spring Boot - Test Code", "path": "Web/Spring/[Spring Boot] Test Code.md" },
+  { "title": "Spring - JPA 기초", "path": "Web/Spring/JPA.md" },
+  { "title": "Spring - JPA Dirty Checking", "path": "Web/Spring/[Spring Data JPA] 더티 체킹 (Dirty Checking).md" },
+  
   { "title": "OS - 운영체제란?", "path": "Computer Science/Operating System/운영체제란.md" },
   { "title": "OS - Process vs Thread", "path": "Computer Science/Operating System/프로세스 vs 스레드.md" },
   { "title": "OS - PCB & Context Switching", "path": "Computer Science/Operating System/PCB와 Context Switching.md" },
