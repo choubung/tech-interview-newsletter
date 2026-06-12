@@ -1,7 +1,6 @@
 name: Daily Tech Newsletter
 
 on:
-  on:
   schedule:
     # KST 월~금 아침 7시 13분 실행 (UTC 일~목 22:13)
     - cron: '13 22 * * 0-4'
