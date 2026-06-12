@@ -1,9 +1,10 @@
 name: Daily Tech Newsletter
 
 on:
+  on:
   schedule:
-    # 한국 시간 평일 아침 9시 13분 실행 (안전망)
-    - cron: '13 0 * * 1-5'
+    # KST 월~금 아침 7시 13분 실행 (UTC 일~목 22:13)
+    - cron: '13 22 * * 0-4'
   workflow_dispatch: # 수동으로 즉시 실행할 수 있는 버튼 활성화
 
 jobs:
