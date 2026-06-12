@@ -2,8 +2,8 @@ name: Daily Tech Newsletter
 
 on:
   schedule:
-    # 매일 평일(월~금) 한국 시간 아침 9시 자동 실행
-    - cron: '0 0 * * 1-5'
+    # 한국 시간 평일 아침 9시 13분 실행 (안전망)
+    - cron: '13 0 * * 1-5'
   workflow_dispatch: # 수동으로 즉시 실행할 수 있는 버튼 활성화
 
 jobs:
@@ -34,9 +34,6 @@ jobs:
         GMAIL_APP_PASSWORD: ${{ secrets.GMAIL_APP_PASSWORD }}
         RECEIVER_EMAILS: ${{ secrets.RECEIVER_EMAILS }}
         SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
-        
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        GITHUB_REPOSITORY: ${{ github.repository }}
-        
-        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-      run: python send_newsletter.py
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # 💡 Push 권한을 위해 추가
+      run: |
+        python send_newsletter.py # 💡 실제 스크립트 실행 명령어 추가
