@@ -1,14 +1,15 @@
 import os
-import json
 import smtplib
+import json
 import time
 import sys 
 import subprocess 
-from email.mime.text import MIMEText          
-from email.mime.multipart import MIMEMultipart 
 import requests
 from google import genai
 from urllib.parse import quote
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
+from email.utils import formataddr
 
 # ==========================================
 # 1. 환경 변수 및 설정 로드
@@ -18,7 +19,7 @@ GMAIL_APP_PASSWORD = os.environ.get("GMAIL_APP_PASSWORD")
 GITHUB_TOKEN = os.environ.get("GITHUB_TOKEN") 
 GITHUB_REPOSITORY = os.environ.get("GITHUB_REPOSITORY")
 
-# 수신자 이메일 파싱
+# 수신자 이메일 파싱 (리스트 형태로 저장)
 RECEIVER_EMAILS_STR = os.environ.get("RECEIVER_EMAILS", "")
 RECEIVER_EMAILS = [email.strip() for email in RECEIVER_EMAILS_STR.split(",") if email.strip()]
 
@@ -82,7 +83,8 @@ AI 특유의 응원 멘트나 마무리 감성 문구도 전면 배제해주세�
    - 태그: <span style="background-color: #e3f2fd; padding: 2px 4px; border-radius: 3px; font-weight: normal; color: #37352f;">정의문</span>
 4. 🔶 노란색 하이라이트 (핵심 특징 및 중요 강조):
    - 실무 관점의 핵심 트레이드오프, 중요 성능 특징, 또는 면접 및 실무에서 개발자가 반드시 유념해야 할 '중요한 결론이나 조언'에 폭넓게 사용하십시오. (위 파란색 하이라이트 조건에 부합하지 않는 모든 '중요 강조 문장'은 무조건 노란색으로 처리합니다.)
-   - 태그: <span style="background-color: #fffde7; padding: 2px 4px; border-radius: 3px; font-weight: normal; color: #37352f;">핵심특징 및 중요문장</span>5. 💻 실무 소스 코드 전용 상자 (필요한 경우에만 제한적 적용):
+   - 태그: <span style="background-color: #fffde7; padding: 2px 4px; border-radius: 3px; font-weight: normal; color: #37352f;">핵심특징 및 중요문장</span>
+5. 💻 실무 소스 코드 전용 상자 (필요한 경우에만 제한적 적용):
    - ⚠️ 원본 내용에 구체적인 소스 코드 예시(자바, C++ 등)가 포함되어 있고, 이를 보여주는 것이 개념 이해에 '필수적'이라고 판단될 때만 이 상자를 사용하십시오. 뻔한 설명문은 절대 코드 블록으로 만들지 마십시오.
    - 메일 앱에서 디자인이 절대 깨지지 않도록 반드시 아래 구조의 인라인 스타일 래퍼로 감싸서 출력하십시오. (마크다운 기호 ``` 사용 절대 금지)
    - 구조: <pre style="background-color: #f7f6f3; padding: 12px; border-radius: 6px; border-left: 4px solid #dfdfde; margin: 12px 0; overflow-x: auto; white-space: pre;"><code style="font-family: 'SFMono-Regular', Consolas, monospace; font-size: 12.5px; color: #37352f; line-height: 1.5;">코드 내용</code></pre>
@@ -124,13 +126,18 @@ AI 특유의 응원 멘트나 마무리 감성 문구도 전면 배제해주세�
             else:
                 raise e
 
-def send_email_to_user(receiver, subject, body):
+def send_email_bcc(subject, body):
+    """숨은 참조(BCC)를 활용하여 한 번의 연결로 모든 구독자에게 일괄 발송합니다."""
     msg = MIMEMultipart()
-    msg['From'] = SENDER_EMAIL
-    msg['To'] = receiver
+    
+    # 💡 겉으로 보여지는 보내는 사람 (이름 커스텀)
+    msg['From'] = formataddr(("파도", SENDER_EMAIL))
+    
+    # 💡 겉으로 보여지는 받는 사람 (To) -> 발신자 본인으로 설정 (BCC 효과)
+    msg['To'] = SENDER_EMAIL
     msg['Subject'] = subject
 
-    # 💡 마크다운 링크 찌꺼기가 제거된 클린 푸터 프레임
+    # 💡 마크다운 링크 찌꺼기가 제거된 클린 푸터 프레임 적용
     notion_advanced_template = f"""
     <div style="font-size: 14.5px; line-height: 1.8; color: #37352f; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', 'Malgun Gothic', sans-serif; max-width: 600px; margin: 0 auto; padding: 20px 12px;">
         <style>
@@ -161,7 +168,7 @@ def send_email_to_user(receiver, subject, body):
         {body}
         
         <div style="margin-top: 40px; padding-top: 16px; border-top: 1px solid #e1e4e6; font-size: 11.5px; color: #868685; text-align: center;">
-            본 콘텐츠는 <a href="[https://github.com/gyoogle/tech-interview-for-developer](https://github.com/gyoogle/tech-interview-for-developer)" target="_blank" style="color: #2c5282; text-decoration: none; font-weight: 500;">tech-interview-for-developer</a> 오픈소스 레포지토리를 기반으로 큐레이션되었습니다.
+            본 콘텐츠는 <a href="https://github.com/gyoogle/tech-interview-for-developer" target="_blank" style="color: #2c5282; text-decoration: none; font-weight: 500;">tech-interview-for-developer</a> 오픈소스 레포지토리를 기반으로 큐레이션되었습니다.
         </div>
     </div>
     """
@@ -171,7 +178,8 @@ def send_email_to_user(receiver, subject, body):
     server = smtplib.SMTP('smtp.gmail.com', 587)
     server.starttls()
     server.login(SENDER_EMAIL, GMAIL_APP_PASSWORD)
-    server.sendmail(SENDER_EMAIL, receiver, msg.as_string())
+    # 💡 핵심: 수신자 명단(RECEIVER_EMAILS) 리스트 전체를 두 번째 인자로 넘겨 일괄 발송
+    server.sendmail(SENDER_EMAIL, RECEIVER_EMAILS, msg.as_string())
     server.quit()
 
 def commit_and_push_progress():
@@ -187,13 +195,12 @@ def commit_and_push_progress():
         os.system('git add progress.json')
         os.system('git commit -m "CHORE: Update daily newsletter progress" || true')
         
+        # 💡 마크다운 찌꺼기가 섞여 있던 URL 부분을 정상적인 문자열로 수정했습니다.
         remote_url = f"https://x-access-token:{GITHUB_TOKEN}@github.com/{GITHUB_REPOSITORY}.git"
         
-        # 💡 [핵심 수정 1] 당겨올 브랜치 이름을 master에서 main으로 변경
         print("▶ 원격 저장소 최신 상태 동기화(Pull) 중...")
         subprocess.run(['git', 'pull', '--rebase', remote_url, 'main'], capture_output=True)
         
-        # 💡 [핵심 수정 2] 밀어넣을 타겟 브랜치를 HEAD:master에서 HEAD:main으로 변경
         result = subprocess.run(
             ['git', 'push', remote_url, 'HEAD:main'],
             capture_output=True,
@@ -232,19 +239,16 @@ def main():
         print("🤖 Gemini가 뉴스레터를 작성하고 있습니다...")
         newsletter_body = generate_newsletter_with_gemini(topic_title, raw_content)
 
-        # 💡 [테스트용 임시 코드] 제미나이 대신 고정된 텍스트를 강제로 꽂아 넣습니다.
-        # newsletter_body = "<h2>🌊 깃허브 Push 및 이메일 발송 테스트 완료!</h2><p>이 메일이 무사히 도착하고, 깃허브 레포지토리의 progress.json 숫자가 2로 올라갔다면 모든 백엔드 파이프라인이 완벽하게 뚫린 것입니다.</p>"
-
         email_subject = f"[🌊 오늘의 CS 토픽] {topic_title}"
 
         print(f"📬 총 {len(RECEIVER_EMAILS)}명의 구독자에게 발송을 시작합니다...")
 
-        for email in RECEIVER_EMAILS:
-            try:
-                send_email_to_user(email, email_subject, newsletter_body)
-                print(f"   ✅ 발송 성공: {email}")
-            except Exception as mail_err:
-                print(f"   ❌ 발송 실패: {email} (사유: {mail_err})")
+        # 💡 반복문 제거: 단 1회의 호출로 일괄 발송 처리
+        try:
+            send_email_bcc(email_subject, newsletter_body)
+            print("   ✅ 숨은 참조(BCC) 일괄 발송 완료!")
+        except Exception as mail_err:
+            print(f"   ❌ 발송 실패 (사유: {mail_err})")
 
         progress["current_index"] = current_idx + 1
         save_json_file(PROGRESS_FILE, progress)
