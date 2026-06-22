@@ -1,0 +1,28 @@
+name: Validate Curriculum Paths
+
+on:
+  schedule:
+    # ⏰ 매주 일요일 아침 10시 KST (UTC 일요일 01:00)
+    # 평일 발송이 시작되는 월요일 전에 미리 검사합니다.
+    - cron: '0 1 * * 0'
+  workflow_dispatch: # 수동으로 즉시 검사할 수 있는 버튼
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install Dependencies
+      # 검증 스크립트는 제미나이나 메일 발송 기능이 없으므로 requests만 설치하면 됩니다.
+      run: pip install requests
+
+    - name: Run Validation Script
+      run: python validate_curriculum.py
