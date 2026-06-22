@@ -80,7 +80,7 @@
   { "title": "Design Pattern - Factory Method", "path": "Design Pattern/Design Pattern_Factory Method.md" },
   { "title": "Design Pattern - Template Method", "path": "Design Pattern/Template Method Pattern.md" },
   { "title": "Design Pattern - Adapter", "path": "Design Pattern/Adapter Pattern.md" },
-  { "title": "Design Pattern - Composite", "path": "Design Pattern/Composite Pattern.md" }
+  { "title": "Design Pattern - Composite", "path": "Design Pattern/Composite Pattern.md" },
   
   { "title": "유효하지 않은 주소", "path": 유효하지않은/마크다운파일.md" }
 ]
